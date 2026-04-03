@@ -2,71 +2,6 @@
   "vehicleId": "68보0632",
   "records": [
     {
-      "id": "record_tires_20260329",
-      "date": "2026-03-29",
-      "odometerKm": 82750,
-      "items": [
-        {
-          "code": "tires:프론트 타이어 교체",
-          "categoryKey": "tires",
-          "label": "프론트 타이어 교체",
-          "isCustom": false
-        },
-        {
-          "code": "tires:리어 타이어 교체",
-          "categoryKey": "tires",
-          "label": "리어 타이어 교체",
-          "isCustom": false
-        },
-        {
-          "code": "tires:휠 얼라인먼트",
-          "categoryKey": "tires",
-          "label": "휠 얼라인먼트",
-          "isCustom": false
-        }
-      ],
-      "customItemsText": "",
-      "shopName": "스피드메이트 판교점",
-      "partsCost": 358000,
-      "laborCost": 80000,
-      "totalCost": 438000,
-      "notes": "프론트/리어 모두 교체 후 고속주행 떨림 확인 차 얼라인먼트까지 진행.",
-      "photos": [
-        {
-          "id": "photo_tires_01",
-          "kind": "photo",
-          "fileName": "tires-overview.svg",
-          "originalFileName": "tires-overview.svg",
-          "contentType": "image/svg+xml",
-          "bytes": 1894,
-          "width": 1280,
-          "height": 960,
-          "optimized": true,
-          "uploadedAt": "2026-03-29T06:30:00.000Z",
-          "path": "public/repository-data/users/68보0632/photos/tires-overview.svg"
-        }
-      ],
-      "receiptPhotos": [
-        {
-          "id": "receipt_tires_01",
-          "kind": "receipt",
-          "fileName": "receipt-tires.svg",
-          "originalFileName": "receipt-tires.svg",
-          "contentType": "image/svg+xml",
-          "bytes": 1147,
-          "width": 900,
-          "height": 1200,
-          "optimized": true,
-          "uploadedAt": "2026-03-29T06:40:00.000Z",
-          "path": "public/repository-data/users/68보0632/receipts/receipt-tires.svg"
-        }
-      ],
-      "representativePhotoId": "photo_tires_01",
-      "scheduledSourceId": null,
-      "createdAt": "2026-03-29T06:30:00.000Z",
-      "updatedAt": "2026-03-29T06:40:00.000Z"
-    },
-    {
       "id": "record_brakes_20260215",
       "date": "2026-02-15",
       "odometerKm": 81230,
@@ -216,5 +151,5 @@
       "updatedAt": "2025-12-04T04:20:00.000Z"
     }
   ],
-  "updatedAt": "2026-03-29T06:40:00.000Z"
+  "updatedAt": "2026-04-03T10:08:29.106Z"
 }
