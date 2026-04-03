@@ -63,7 +63,7 @@ const parseGitHubError = async (response: Response) => {
 
   if (response.status === 401) {
     code = 'auth_failed'
-    message = '저장소 동기화 권한이 유효하지 않거나 권한이 부족합니다.'
+    message = '저장 권한이 유효하지 않거나 권한이 부족합니다.'
   } else if (response.status === 403 && remaining === '0') {
     code = 'rate_limit'
     message = resetAt
@@ -108,6 +108,13 @@ export interface RepositoryFilePayload {
   sha: string
   content: string
 }
+
+const readRepositoryFileMeta = async (
+  settings: AppSettings,
+  repositoryPath: string,
+  token = settings.token,
+): Promise<{ sha: string }> =>
+  apiRequest<{ sha: string }>(settings, repositoryPath, {}, token)
 
 export const readPublicJson = async <T>(
   settings: AppSettings,
@@ -157,7 +164,7 @@ export const writeRepositoryTextFile = async (
 
   let sha: string | undefined
   try {
-    sha = (await readRepositoryFile(settings, repositoryPath, token)).sha
+    sha = (await readRepositoryFileMeta(settings, repositoryPath, token)).sha
   } catch (error) {
     if (!(error instanceof GitHubApiError) || error.code !== 'not_found') {
       throw error
@@ -185,12 +192,21 @@ export const deleteRepositoryFile = async (
     throw new GitHubApiError('현재 빌드에는 저장 권한이 포함되지 않았습니다.', 401, 'auth_failed')
   }
 
-  const existing = await readRepositoryFile(settings, repositoryPath, token)
+  let sha: string
+  try {
+    sha = (await readRepositoryFileMeta(settings, repositoryPath, token)).sha
+  } catch (error) {
+    if (error instanceof GitHubApiError && error.code === 'not_found') {
+      return null
+    }
+    throw error
+  }
+
   return apiRequest(settings, repositoryPath, {
     method: 'DELETE',
     body: JSON.stringify({
       message,
-      sha: existing.sha,
+      sha,
       branch: settings.branch,
     }),
   })
@@ -224,7 +240,7 @@ export const uploadRepositoryBlob = async (
 
   let sha: string | undefined
   try {
-    sha = (await readRepositoryFile(settings, repositoryPath, token)).sha
+    sha = (await readRepositoryFileMeta(settings, repositoryPath, token)).sha
   } catch (error) {
     if (!(error instanceof GitHubApiError) || error.code !== 'not_found') {
       throw error
@@ -243,4 +259,4 @@ export const uploadRepositoryBlob = async (
 }
 
 export const testRepositoryAccess = async (settings: AppSettings) =>
-  readRepositoryFile(settings, settings.allowedUsersPath)
+  readRepositoryFileMeta(settings, settings.allowedUsersPath)

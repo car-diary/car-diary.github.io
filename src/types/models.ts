@@ -60,6 +60,7 @@ export interface OdometerHistoryEntry {
   odometerKm: number
   source: 'manual' | 'maintenance' | 'import'
   note: string
+  relatedRecordId?: string | null
 }
 
 export interface OdometerHistory {
@@ -88,6 +89,7 @@ export interface AttachmentPhoto {
   optimized: boolean
   uploadedAt: string
   path: string
+  relatedItemCodes?: string[]
 }
 
 export interface MaintenanceRecord {

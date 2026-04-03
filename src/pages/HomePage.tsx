@@ -1,6 +1,4 @@
 import {
-  ArrowRight,
-  Camera,
   CalendarClock,
   CircleAlert,
   Gauge,
@@ -8,9 +6,18 @@ import {
   Plus,
   Wrench,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import {
+  Badge,
+  Button,
+  Card,
+  Field,
+  Input,
+  ProgressBar,
+  SectionTitle,
+} from '../components/ui'
 import { ROUTES } from '../constants/app'
 import { useApp } from '../context/AppContext'
 import {
@@ -21,16 +28,6 @@ import {
   formatShortDate,
 } from '../lib/format'
 import { getAttachmentUrl } from '../services/carDiaryRepository'
-import {
-  Badge,
-  Button,
-  Card,
-  Field,
-  Input,
-  PageHero,
-  ProgressBar,
-  SectionTitle,
-} from '../components/ui'
 
 export const HomePage = () => {
   const navigate = useNavigate()
@@ -42,22 +39,14 @@ export const HomePage = () => {
   const [odometerNote, setOdometerNote] = useState('')
   const [odometerError, setOdometerError] = useState<string | null>(null)
 
-  const recentRecords = userBundle?.maintenanceRecords.records.slice(0, 3) ?? []
-  const scheduledItems = userBundle?.scheduledMaintenance.items
-    .filter((item) => item.status === 'pending')
-    .slice(0, 4)
-
-  const recentPhotos = useMemo(
-    () =>
-      (userBundle?.maintenanceRecords.records ?? [])
-        .flatMap((record) => record.photos)
-        .slice(0, 6),
-    [userBundle],
-  )
-
   if (!userBundle || !dashboardSummary) {
     return null
   }
+
+  const scheduledItems = userBundle.scheduledMaintenance.items
+    .filter((item) => item.status === 'pending')
+    .slice(0, 4)
+  const recentRecords = userBundle.maintenanceRecords.records.slice(0, 4)
 
   const storageTone =
     userBundle.storageSummary.percentUsed >= 95
@@ -70,9 +59,10 @@ export const HomePage = () => {
     event.preventDefault()
     const numericValue = Number(odometerValue)
     if (!Number.isFinite(numericValue) || numericValue < 0) {
-      setOdometerError('유효한 주행거리를 입력하세요.')
+      setOdometerError('주행거리를 확인하세요.')
       return
     }
+
     try {
       setOdometerError(null)
       await updateOdometer({
@@ -91,22 +81,29 @@ export const HomePage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHero
-        title={`${userBundle.profile.vehicleId} 차량 상태 요약`}
-        description="주행거리, 정비예정, 비용 흐름, 저장공간 사용량까지 한 번에 확인할 수 있도록 홈 화면을 구성했습니다."
-        aside={
+      <div className="flex flex-col gap-4 rounded-[2rem] border border-border/70 bg-gradient-to-r from-panel to-panelAlt px-5 py-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accentSoft">
+              Dashboard
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+              {userBundle.profile.vehicleId}
+            </h1>
+            <p className="mt-2 text-sm text-muted">현재 상태와 최근 기록만 간단히 보여줍니다.</p>
+          </div>
           <div className="flex flex-wrap gap-3">
             <Button onClick={() => navigate(ROUTES.records)}>
               <Plus className="h-4 w-4" />
-              정비항목 추가
+              정비내역 추가
             </Button>
             <Button variant="secondary" onClick={() => navigate(ROUTES.scheduled)}>
               <CalendarClock className="h-4 w-4" />
               정비예정 추가
             </Button>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
@@ -121,6 +118,7 @@ export const HomePage = () => {
             <Gauge className="h-8 w-8 text-accentSoft" />
           </div>
         </Card>
+
         <Card>
           <p className="text-sm text-muted">이번 달 지출</p>
           <div className="mt-4 flex items-end justify-between gap-3">
@@ -135,6 +133,7 @@ export const HomePage = () => {
             <Wrench className="h-8 w-8 text-success" />
           </div>
         </Card>
+
         <Card>
           <p className="text-sm text-muted">정비예정</p>
           <div className="mt-4 flex items-end justify-between gap-3">
@@ -147,8 +146,9 @@ export const HomePage = () => {
             <CalendarClock className="h-8 w-8 text-warn" />
           </div>
         </Card>
+
         <Card>
-          <p className="text-sm text-muted">저장공간 사용량</p>
+          <p className="text-sm text-muted">저장공간</p>
           <div className="mt-4">
             <div className="flex items-end justify-between gap-3">
               <p className="text-3xl font-semibold">
@@ -175,7 +175,7 @@ export const HomePage = () => {
           <div className="flex items-start gap-3">
             <CircleAlert className="mt-0.5 h-5 w-5 text-danger" />
             <div className="space-y-2">
-              <p className="font-semibold text-text">경고 / 알림</p>
+              <p className="font-semibold text-text">경고</p>
               {dashboardSummary.urgentAlerts.slice(0, 4).map((alert) => (
                 <div
                   key={alert.id}
@@ -202,12 +202,9 @@ export const HomePage = () => {
         </Card>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <Card>
-          <SectionTitle
-            title="주행거리 갱신"
-            description="이전 기록보다 작은 값은 기본적으로 막고, 예외 상황이면 강제 저장을 허용합니다."
-          />
+          <SectionTitle title="주행거리 갱신" />
           <form className="mt-5 grid gap-4" onSubmit={handleOdometerSubmit}>
             <Field label="현재 주행거리 (km)">
               <Input
@@ -220,7 +217,7 @@ export const HomePage = () => {
               <Input
                 value={odometerNote}
                 onChange={(event) => setOdometerNote(event.target.value)}
-                placeholder="예: 주유 후 계기판 확인"
+                placeholder="예: 주유 후 확인"
               />
             </Field>
             <label className="flex items-center gap-2 text-sm text-muted">
@@ -230,55 +227,28 @@ export const HomePage = () => {
                 type="checkbox"
                 className="h-4 w-4 rounded border-border bg-panelAlt"
               />
-              예외 상황이라면 이전 기록보다 작은 값도 강제 저장
+              이전 기록보다 작아도 저장
             </label>
             {odometerError ? <p className="text-sm text-danger">{odometerError}</p> : null}
             <Button type="submit" className="w-full sm:w-fit">
-              주행거리 갱신
+              저장
             </Button>
           </form>
         </Card>
 
         <Card>
-          <SectionTitle title="빠른 액션" description="자주 쓰는 기능을 바로 실행합니다." />
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <Button onClick={() => navigate(ROUTES.records)}>
-              <Wrench className="h-4 w-4" />
-              정비항목 추가
-            </Button>
-            <Button variant="secondary" onClick={() => navigate(ROUTES.scheduled)}>
-              <CalendarClock className="h-4 w-4" />
-              정비예정 추가
-            </Button>
-            <Button variant="secondary" onClick={() => navigate(ROUTES.statistics)}>
-              <ArrowRight className="h-4 w-4" />
-              통계 보기
-            </Button>
-            <Button variant="ghost" onClick={() => navigate(ROUTES.backups)}>
-              <ArrowRight className="h-4 w-4" />
-              데이터 백업
-            </Button>
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card>
-          <SectionTitle
-            title="정비예정 요약"
-            description="정비 요망과 곧 예정 항목이 먼저 보이도록 정렬합니다."
-          />
+          <SectionTitle title="정비예정" />
           <div className="mt-5 space-y-3">
-            {(scheduledItems ?? []).length === 0 ? (
+            {scheduledItems.length === 0 ? (
               <p className="text-sm text-muted">등록된 정비예정이 없습니다.</p>
             ) : (
-              scheduledItems?.map((item) => (
+              scheduledItems.map((item) => (
                 <div key={item.id} className="rounded-2xl border border-border bg-panelAlt p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold">{item.title}</p>
                       <p className="mt-1 text-sm text-muted">
-                        예정일 {formatShortDate(item.scheduledDate)} / 목표{' '}
+                        {formatShortDate(item.scheduledDate)} /{' '}
                         {item.targetOdometerKm
                           ? formatKilometers(item.targetOdometerKm)
                           : '-'}
@@ -305,69 +275,63 @@ export const HomePage = () => {
             )}
           </div>
         </Card>
-
-        <Card>
-          <SectionTitle
-            title="최근 정비내역"
-            description="최근 입력한 정비와 비용을 날짜순으로 보여줍니다."
-          />
-          <div className="mt-5 space-y-3">
-            {recentRecords.length === 0 ? (
-              <p className="text-sm text-muted">아직 정비내역이 없습니다.</p>
-            ) : (
-              recentRecords.map((record) => (
-                <div key={record.id} className="rounded-2xl border border-border bg-panelAlt p-4">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="font-semibold">
-                        {record.items.map((item) => item.label).join(', ')}
-                      </p>
-                      <p className="mt-1 text-sm text-muted">
-                        {formatShortDate(record.date)} · {formatKilometers(record.odometerKm)} ·{' '}
-                        {record.shopName || '업체명 미입력'}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatCurrency(record.totalCost)}</p>
-                      <p className="text-sm text-muted">
-                        사진 {record.photos.length}장 / 영수증 {record.receiptPhotos.length}장
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
       </div>
 
       <Card>
-        <SectionTitle
-          title="최근 업로드 사진"
-          description="대표 사진과 최근 업로드 이미지를 모아 보여줍니다."
-        />
-        {recentPhotos.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">업로드된 사진이 없습니다.</p>
-        ) : (
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recentPhotos.map((photo) => (
-              <div
-                key={photo.id}
-                className="overflow-hidden rounded-3xl border border-border bg-panelAlt"
-              >
-                <img
-                  src={getAttachmentUrl(settings, photo.path)}
-                  alt={photo.originalFileName}
-                  className="aspect-[4/3] w-full object-cover"
-                />
-                <div className="flex items-center justify-between px-4 py-3 text-sm">
-                  <span className="truncate text-text">{photo.originalFileName}</span>
-                  <Camera className="h-4 w-4 text-muted" />
+        <SectionTitle title="최근 정비내역" />
+        <div className="mt-5 space-y-4">
+          {recentRecords.length === 0 ? (
+            <p className="text-sm text-muted">아직 정비내역이 없습니다.</p>
+          ) : (
+            recentRecords.map((record) => (
+              <div key={record.id} className="rounded-3xl border border-border bg-panelAlt p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      {record.items.map((item) => (
+                        <Badge key={`${record.id}-${item.code}`} tone="info">
+                          {item.label}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="mt-3 font-semibold">
+                      {formatShortDate(record.date)} · {formatKilometers(record.odometerKm)}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">
+                      {record.shopName || '업체명 미입력'} · {formatCurrency(record.totalCost)}
+                    </p>
+                    {record.notes ? (
+                      <p className="mt-2 text-sm leading-6 text-muted">{record.notes}</p>
+                    ) : null}
+                  </div>
+                  <div className="text-sm text-muted">
+                    사진 {record.photos.length}장 · 영수증 {record.receiptPhotos.length}장
+                  </div>
                 </div>
+
+                {record.photos.length > 0 ? (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {record.photos.slice(0, 3).map((photo) => (
+                      <div
+                        key={photo.id}
+                        className="overflow-hidden rounded-2xl border border-border bg-panel"
+                      >
+                        <img
+                          src={getAttachmentUrl(settings, photo.path)}
+                          alt={photo.originalFileName}
+                          className="aspect-[4/3] w-full object-cover"
+                        />
+                        <div className="px-3 py-2">
+                          <p className="truncate text-sm text-text">{photo.originalFileName}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </Card>
     </div>
   )

@@ -119,6 +119,7 @@ export const MAINTENANCE_CATEGORIES: MaintenanceCategory[] = [
     '워셔액 보충',
     '소모품 점검',
     '정기점검',
+    '자동차점검',
     '기타 직접입력',
   ]),
 ]
