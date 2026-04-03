@@ -22,8 +22,8 @@ import {
   buildRawPublicUrl,
   deleteRepositoryFile,
   readPublicJson,
-  writeRepositoryJson,
   uploadRepositoryBlob,
+  writeRepositoryJson,
 } from './githubApi'
 
 const createEmptyProfile = (vehicleId: string): UserProfile => {
@@ -31,11 +31,11 @@ const createEmptyProfile = (vehicleId: string): UserProfile => {
   return {
     vehicleId,
     nickname: vehicleId,
-    manufacturer: '현대',
-    modelName: '샘플 차량',
-    trim: '1.6 터보',
-    modelYear: 2022,
-    fuelType: '가솔린',
+    manufacturer: '',
+    modelName: '차량 정보 미입력',
+    trim: '',
+    modelYear: new Date().getFullYear(),
+    fuelType: '미입력',
     purchaseDate: null,
     currentOdometerKm: 0,
     createdAt: now,
@@ -168,17 +168,6 @@ export const saveUserBundle = async (
     `${messagePrefix}: update storage summary`,
   )
 }
-
-export const saveAllowedUsers = async (
-  settings: AppSettings,
-  entries: AllowedUserPublicEntry[],
-) =>
-  writeRepositoryJson(
-    settings,
-    settings.allowedUsersPath,
-    entries,
-    'chore: update allowed users',
-  )
 
 const getFileExtension = (mimeType: string) => {
   if (mimeType === 'image/png') return 'png'

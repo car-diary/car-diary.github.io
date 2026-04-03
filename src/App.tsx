@@ -6,11 +6,6 @@ import { ToastViewport } from './components/ui'
 import { ROUTES } from './constants/app'
 import { AppProvider, useApp } from './context/AppContext'
 
-const ActivateAccountPage = lazy(() =>
-  import('./pages/ActivateAccountPage').then((module) => ({
-    default: module.ActivateAccountPage,
-  })),
-)
 const BackupsPage = lazy(() =>
   import('./pages/BackupsPage').then((module) => ({
     default: module.BackupsPage,
@@ -83,14 +78,6 @@ const AppRoutes = () => {
           element={
             <PublicRoute>
               <LoginPage />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path={ROUTES.activate}
-          element={
-            <PublicRoute>
-              <ActivateAccountPage />
             </PublicRoute>
           }
         />

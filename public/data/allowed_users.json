@@ -2,33 +2,18 @@
   {
     "vehicleId": "68보0632",
     "displayName": "68보0632",
-    "status": "activated",
-    "passwordSalt": "demo-salt-cardiary",
-    "passwordHash": "Q7ECBzt9PBDKGciYWAGe74b41w139OIlSKDrl28/ooU=",
-    "activatedAt": "2026-04-03T03:00:00.000Z",
-    "passwordUpdatedAt": "2026-04-03T03:00:00.000Z",
     "profilePath": "public/repository-data/users/68보0632/profile.json",
-    "notes": "demo account"
+    "notes": null
   },
   {
     "vehicleId": "123가4567",
     "displayName": "123가4567",
-    "status": "pending",
-    "passwordSalt": null,
-    "passwordHash": null,
-    "activatedAt": null,
-    "passwordUpdatedAt": null,
     "profilePath": "public/repository-data/users/123가4567/profile.json",
     "notes": null
   },
   {
     "vehicleId": "45나8888",
     "displayName": "45나8888",
-    "status": "pending",
-    "passwordSalt": null,
-    "passwordHash": null,
-    "activatedAt": null,
-    "passwordUpdatedAt": null,
     "profilePath": "public/repository-data/users/45나8888/profile.json",
     "notes": null
   }

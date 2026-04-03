@@ -40,6 +40,8 @@ jobs:
         run: python tools/build_allowed_users.py
 
       - name: Build site
+        env:
+          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
         run: npm run build
 
       - name: Configure Pages

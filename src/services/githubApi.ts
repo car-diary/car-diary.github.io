@@ -63,12 +63,12 @@ const parseGitHubError = async (response: Response) => {
 
   if (response.status === 401) {
     code = 'auth_failed'
-    message = 'GitHub token이 유효하지 않거나 권한이 부족합니다.'
+    message = '저장소 동기화 권한이 유효하지 않거나 권한이 부족합니다.'
   } else if (response.status === 403 && remaining === '0') {
     code = 'rate_limit'
     message = resetAt
-      ? `GitHub API rate limit이 초과되었습니다. reset=${resetAt}`
-      : 'GitHub API rate limit이 초과되었습니다.'
+      ? `GitHub API rate limit을 초과했습니다. reset=${resetAt}`
+      : 'GitHub API rate limit을 초과했습니다.'
   } else if (response.status === 404) {
     code = 'not_found'
     message = '요청한 GitHub 파일을 찾지 못했습니다.'
@@ -152,7 +152,7 @@ export const writeRepositoryTextFile = async (
   token = settings.token,
 ) => {
   if (!token) {
-    throw new GitHubApiError('GitHub token이 필요합니다.', 401, 'auth_failed')
+    throw new GitHubApiError('현재 빌드에는 저장 권한이 포함되지 않았습니다.', 401, 'auth_failed')
   }
 
   let sha: string | undefined
@@ -182,7 +182,7 @@ export const deleteRepositoryFile = async (
   token = settings.token,
 ) => {
   if (!token) {
-    throw new GitHubApiError('GitHub token이 필요합니다.', 401, 'auth_failed')
+    throw new GitHubApiError('현재 빌드에는 저장 권한이 포함되지 않았습니다.', 401, 'auth_failed')
   }
 
   const existing = await readRepositoryFile(settings, repositoryPath, token)
@@ -219,7 +219,7 @@ export const uploadRepositoryBlob = async (
   token = settings.token,
 ) => {
   if (!token) {
-    throw new GitHubApiError('GitHub token이 필요합니다.', 401, 'auth_failed')
+    throw new GitHubApiError('현재 빌드에는 저장 권한이 포함되지 않았습니다.', 401, 'auth_failed')
   }
 
   let sha: string | undefined

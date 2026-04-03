@@ -1,18 +1,16 @@
-import { Database, KeyRound, ShieldAlert } from 'lucide-react'
+import { CarFront, Database, Gauge, LayoutGrid } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
-import { DEMO_PASSWORD, DEMO_VEHICLE_ID, ROUTES } from '../constants/app'
+import { Badge, Button, Card, Field, Input, PageHero } from '../components/ui'
+import { ROUTES } from '../constants/app'
 import { useApp } from '../context/AppContext'
 import { validateVehicleId } from '../lib/validation'
-import { Badge, Button, Card, Field, Input, PageHero } from '../components/ui'
 
 export const LoginPage = () => {
   const navigate = useNavigate()
-  const { login, settings, saveSettings, session, allowedUsers } = useApp()
-  const [vehicleId, setVehicleId] = useState(DEMO_VEHICLE_ID)
-  const [password, setPassword] = useState(DEMO_PASSWORD)
-  const [token, setToken] = useState(settings.token)
+  const { login, session, allowedUsers } = useApp()
+  const [vehicleId, setVehicleId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -24,20 +22,22 @@ export const LoginPage = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const vehicleError = validateVehicleId(vehicleId)
+    const nextVehicleId = vehicleId.trim()
+    const vehicleError = validateVehicleId(nextVehicleId)
     if (vehicleError) {
       setError(vehicleError)
       return
     }
+
     setIsSubmitting(true)
     setError(null)
+
     try {
-      saveSettings({ token: token.trim() })
-      await login(vehicleId.trim(), password)
+      await login(nextVehicleId)
       navigate(ROUTES.home)
     } catch (submitError) {
       setError(
-        submitError instanceof Error ? submitError.message : '로그인에 실패했습니다.',
+        submitError instanceof Error ? submitError.message : '로그인 처리에 실패했습니다.',
       )
     } finally {
       setIsSubmitting(false)
@@ -49,41 +49,40 @@ export const LoginPage = () => {
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 lg:flex-row">
         <section className="flex-1">
           <PageHero
-            title="차량 상태와 정비비 흐름을 GitHub 위에서 관리"
-            description="Car Diary는 GitHub Pages 정적 사이트로 열리고, 실제 기록은 GitHub Repository JSON과 이미지에 저장됩니다. 로컬 PC가 꺼져 있어도 조회는 계속 가능하고, token을 넣으면 브라우저에서 직접 CRUD를 수행합니다."
+            title="차량별 정비 기록과 유지비를 한 화면에서 관리"
+            description="Car Diary는 GitHub Pages에 배포되는 차량 정비/차계부 웹앱입니다. 허용된 차량번호만 접속할 수 있고, 기록은 저장소 데이터와 바로 연결됩니다."
             aside={
               <div className="grid gap-3 sm:grid-cols-3">
                 <Card className="min-w-[180px]">
-                  <ShieldAlert className="h-5 w-5 text-warn" />
-                  <p className="mt-4 text-sm font-semibold">가벼운 인증</p>
+                  <CarFront className="h-5 w-5 text-accentSoft" />
+                  <p className="mt-4 text-sm font-semibold">차량번호 바로 접속</p>
                   <p className="mt-1 text-sm text-muted">
-                    차량번호 + 비밀번호 기반 제한 로그인
+                    허용된 차량번호만 입력하면 바로 기록 화면으로 들어갑니다.
                   </p>
                 </Card>
                 <Card className="min-w-[180px]">
-                  <Database className="h-5 w-5 text-accentSoft" />
-                  <p className="mt-4 text-sm font-semibold">GitHub JSON 저장</p>
+                  <Database className="h-5 w-5 text-success" />
+                  <p className="mt-4 text-sm font-semibold">저장소 동기화</p>
                   <p className="mt-1 text-sm text-muted">
-                    파일 구조가 보여서 초보자도 이해하기 쉽습니다.
+                    정비내역, 정비예정, 사진, 영수증을 GitHub 데이터와 함께 관리합니다.
                   </p>
                 </Card>
                 <Card className="min-w-[180px]">
-                  <KeyRound className="h-5 w-5 text-success" />
-                  <p className="mt-4 text-sm font-semibold">token 운영 모드</p>
+                  <LayoutGrid className="h-5 w-5 text-warn" />
+                  <p className="mt-4 text-sm font-semibold">모든 화면 반응형</p>
                   <p className="mt-1 text-sm text-muted">
-                    token이 없으면 읽기 전용으로 열립니다.
+                    모바일, 태블릿, 데스크탑에서 같은 흐름으로 바로 사용할 수 있습니다.
                   </p>
                 </Card>
               </div>
             }
           />
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
+          <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
             <Card>
-              <h2 className="text-2xl font-semibold">로그인</h2>
+              <h2 className="text-2xl font-semibold">차량 로그인</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                강보안 인증이 아니라, 사전 허용 차량번호와 비밀번호 해시를 이용한 가벼운 접근
-                제한 UX입니다.
+                차량번호를 입력하면 해당 차량의 정비 기록, 예정 정비, 사진, 통계를 바로 불러옵니다.
               </p>
               <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
                 <Field label="차량번호" error={error?.includes('차량번호') ? error : null}>
@@ -91,43 +90,15 @@ export const LoginPage = () => {
                     value={vehicleId}
                     onChange={(event) => setVehicleId(event.target.value)}
                     placeholder="예: 68보0632"
+                    autoComplete="off"
                   />
                 </Field>
-                <Field label="비밀번호" error={error?.includes('비밀번호') ? error : null}>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="비밀번호 입력"
-                  />
-                </Field>
-                <Field
-                  label="GitHub Token"
-                  hint="선택 입력입니다. 넣으면 쓰기 가능, 비우면 읽기 전용 모드입니다."
-                >
-                  <Input
-                    type="password"
-                    value={token}
-                    onChange={(event) => setToken(event.target.value)}
-                    placeholder="ghp_..."
-                  />
-                </Field>
-                {error && !error.includes('차량번호') && !error.includes('비밀번호') ? (
+                {error && !error.includes('차량번호') ? (
                   <p className="text-sm text-danger">{error}</p>
                 ) : null}
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                    {isSubmitting ? '로그인 중...' : '로그인'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => navigate(ROUTES.activate)}
-                  >
-                    회원가입 / 계정 활성화
-                  </Button>
-                </div>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? '접속 중...' : '차량 열기'}
+                </Button>
               </form>
             </Card>
 
@@ -135,49 +106,36 @@ export const LoginPage = () => {
               <Card>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold">샘플 계정</p>
-                    <p className="mt-1 text-sm text-muted">초기 실행 확인용 더미 데이터</p>
+                    <p className="text-sm font-semibold">허용 차량 목록</p>
+                    <p className="mt-1 text-sm text-muted">
+                      현재 접속 가능한 차량번호 목록입니다.
+                    </p>
                   </div>
-                  <Badge tone="info">Demo</Badge>
+                  <Badge tone="info">{allowedUsers.length}대</Badge>
                 </div>
-                <div className="mt-5 space-y-3 text-sm text-muted">
-                  <p>차량번호: {DEMO_VEHICLE_ID}</p>
-                  <p>비밀번호: {DEMO_PASSWORD}</p>
-                  <p>이 계정은 샘플 `public/repository-data` JSON과 연결되어 있습니다.</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {allowedUsers.length === 0 ? (
+                    <Badge tone="warn">허용 차량 정보를 불러오는 중입니다.</Badge>
+                  ) : (
+                    allowedUsers.slice(0, 8).map((entry) => (
+                      <Badge key={entry.vehicleId} tone="success">
+                        {entry.vehicleId}
+                      </Badge>
+                    ))
+                  )}
                 </div>
               </Card>
 
               <Card>
-                <p className="text-sm font-semibold">허용 차량번호 현황</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {allowedUsers.slice(0, 8).map((entry) => (
-                    <Badge
-                      key={entry.vehicleId}
-                      tone={entry.status === 'activated' ? 'success' : 'warn'}
-                    >
-                      {entry.vehicleId}
-                    </Badge>
-                  ))}
+                <div className="flex items-center gap-3">
+                  <Gauge className="h-5 w-5 text-accentSoft" />
+                  <p className="text-sm font-semibold">운영 포인트</p>
                 </div>
-                <p className="mt-4 text-sm text-muted">
-                  허용 차량번호는 로컬의 `tools/allowed_vehicle_ids.txt`를 편집한 뒤 빌드하여
-                  생성합니다.
-                </p>
-              </Card>
-
-              <Card>
-                <p className="text-sm font-semibold">운영 메모</p>
                 <ul className="mt-4 space-y-2 text-sm leading-6 text-muted">
-                  <li>GitHub 비밀번호는 앱에서 쓰지 않습니다.</li>
-                  <li>브라우저에는 Personal Access Token만 저장하세요.</li>
-                  <li>토큰은 `Contents: Read and write` 권한만으로도 충분합니다.</li>
+                  <li>홈 화면에서 현재 주행거리, 예정 정비, 최근 지출을 한 번에 확인합니다.</li>
+                  <li>정비내역과 정비예정은 차량별 JSON 문서로 정리되어 GitHub에 저장됩니다.</li>
+                  <li>사진과 영수증은 자동 압축 후 업로드되며 저장공간 사용량도 함께 계산됩니다.</li>
                 </ul>
-                <Link
-                  to={ROUTES.activate}
-                  className="mt-5 inline-flex text-sm font-medium text-accentSoft"
-                >
-                  새 차량번호 활성화하기
-                </Link>
               </Card>
             </div>
           </div>

@@ -11,8 +11,8 @@ import {
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '../../constants/app'
-import { cn } from '../../lib/utils'
 import { useApp } from '../../context/AppContext'
+import { cn } from '../../lib/utils'
 import { Badge, Button, Card, IconButton, LoadingOverlay } from '../ui'
 
 const navItems = [
@@ -43,7 +43,9 @@ export const AppShell = () => {
                 Car Diary
               </p>
               <h1 className="mt-3 text-2xl font-semibold">{nickname}</h1>
-              <p className="mt-2 text-sm text-muted">정비 기록과 지출 흐름을 한 화면에서 관리합니다.</p>
+              <p className="mt-2 text-sm text-muted">
+                정비 기록, 예정 정비, 지출, 사진을 차량별로 정리합니다.
+              </p>
             </div>
             <nav className="space-y-2">
               {navItems.map(({ to, label, icon: Icon }) => (
@@ -67,14 +69,14 @@ export const AppShell = () => {
             <div className="mt-auto space-y-4">
               <div className="rounded-2xl border border-border bg-panelAlt p-4">
                 <p className="text-xs uppercase tracking-[0.24em] text-muted">
-                  Operation Mode
+                  Repository Sync
                 </p>
-                <div className="mt-3 flex items-center justify-between">
+                <div className="mt-3 flex items-center justify-between gap-3">
                   <span className="text-sm font-medium text-text">
-                    {isReadOnly ? '읽기 전용' : '쓰기 가능'}
+                    {isReadOnly ? '조회 중심 실행' : '저장 연결됨'}
                   </span>
                   <Badge tone={isReadOnly ? 'warn' : 'success'}>
-                    {isReadOnly ? 'Read only' : 'GitHub write'}
+                    {isReadOnly ? '조회 전용' : '실시간 저장'}
                   </Badge>
                 </div>
               </div>
@@ -112,7 +114,7 @@ export const AppShell = () => {
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <h2 className="text-2xl font-semibold">{session?.vehicleId}</h2>
                   <Badge tone={isReadOnly ? 'warn' : 'success'}>
-                    {isReadOnly ? '읽기 전용 모드' : '기록 저장 가능'}
+                    {isReadOnly ? '조회 전용' : '기록 저장 가능'}
                   </Badge>
                 </div>
               </div>

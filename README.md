@@ -1,336 +1,146 @@
 # Car Diary
 
-GitHub Pages에 배포되는 정적 웹앱이면서, 실제 차량 데이터는 GitHub Repository JSON/이미지 파일로 읽고 쓰는 차량 정비/차계부 앱입니다.
+GitHub Pages에 배포되는 차량 정비/차계부 웹앱입니다.  
+허용된 차량번호만 로그인할 수 있고, 정비내역, 정비예정, 주행거리, 사진, 영수증 데이터를 GitHub 저장소 JSON과 이미지 파일에 기록합니다.
+
+## 1. 핵심 구조
 
 - 프론트엔드: React + TypeScript + Vite + Tailwind CSS
 - 라우팅: `HashRouter`
-- 차트: Recharts
-- 아이콘: lucide-react
-- 데이터 저장: GitHub Repository Contents API + raw GitHub URL
-- 인증: 사전 허용 차량번호 + 비밀번호 해시 기반의 가벼운 접근 제한
+- 배포: GitHub Pages
+- 데이터 저장: 같은 저장소의 `public/repository-data` 경로
+- 허용 차량 관리: 로컬 `tools/allowed_vehicle_ids.txt`에서 빌드
 
-중요:
+`HashRouter`를 사용한 이유:
 
-- 이 프로젝트는 금융서비스 수준의 강보안 시스템이 아닙니다.
-- GitHub password를 앱에 넣어 쓰지 않습니다.
-- 쓰기 기능은 사용자가 직접 입력한 GitHub Personal Access Token을 브라우저 `localStorage`에 저장하는 방식입니다.
+- GitHub Pages는 정적 호스팅이므로 직접 경로 진입 시 서버 라우팅이 없습니다.
+- `#/records`, `#/scheduled` 형태로 경로를 고정하면 새로고침과 직접 진입이 안정적입니다.
+- 별도 `404.html` 라우팅 트릭보다 단순하고 유지보수가 쉽습니다.
 
-## 1. 전체 아키텍처
+## 2. 로그인 방식
 
-### 1-1. 왜 이런 구조인가
+- 로그인 화면에서는 차량번호만 입력합니다.
+- 차량번호가 `public/data/allowed_users.json`에 있으면 접속할 수 있습니다.
+- 처음 접속한 차량번호에 사용자 데이터 폴더가 없으면 앱이 기본 JSON 문서를 생성합니다.
 
-이 앱의 목표는 `로컬 PC가 꺼져 있어도 사이트와 데이터 조회가 계속 가능`한 구조입니다.
+주의:
 
-- 화면은 GitHub Pages에서 정적으로 렌더링됩니다.
-- 데이터는 GitHub Repository 안의 JSON/이미지 파일로 저장됩니다.
-- 공개 읽기는 `raw.githubusercontent.com` 경로를 사용합니다.
-- 쓰기는 브라우저가 GitHub Contents API를 직접 호출합니다.
-- 별도 서버, DB, Firebase, Supabase 없이 운영 가능합니다.
+- 배포 빌드에는 GitHub API 쓰기용 값이 포함될 수 있습니다.
+- 이 방식은 강한 보안 구조가 아닙니다.
+- 공개 저장소와 개인 프로젝트 운영 편의를 우선한 구조입니다.
 
-### 1-2. 읽기/쓰기 흐름
-
-읽기:
-
-1. 앱 번들은 GitHub Pages에서 로드됩니다.
-2. 공개 데이터는 `public/data/*`, `public/repository-data/*` 경로를 raw GitHub URL로 읽습니다.
-3. token이 없어도 공개 데이터 조회는 가능합니다.
-
-쓰기:
-
-1. 사용자가 설정 화면에 GitHub token을 입력합니다.
-2. token은 브라우저 `localStorage`에 저장됩니다.
-3. 정비내역/정비예정/주행거리/활성화 작업 시 GitHub Contents API로 JSON 또는 이미지 파일을 갱신합니다.
-4. `sha` 기반 업데이트 흐름을 사용합니다.
-
-### 1-3. 라우팅 선택 이유
-
-이 프로젝트는 `HashRouter`를 사용합니다.
-
-이유:
-
-- GitHub Pages 정적 환경에서 새로고침/직접 진입 시 가장 단순하고 안정적입니다.
-- 별도 `404.html` 리다이렉트 트릭 없이 동작합니다.
-- 루트 사이트(`car-diary.github.io/`)에서도 운영 부담이 작습니다.
-
-## 2. 폴더 구조
+## 3. 데이터 구조
 
 ```text
-CarDiary/
-├─ build_allowed_users.bat
-├─ index.html
-├─ package.json
-├─ postcss.config.js
-├─ README.md
-├─ tailwind.config.ts
-├─ tsconfig.app.json
-├─ tsconfig.json
-├─ tsconfig.node.json
-├─ vite.config.ts
-├─ public/
-│  ├─ data/
-│  │  ├─ allowed_users.json
-│  │  └─ allowed_users.meta.json
-│  └─ repository-data/
-│     └─ users/
-│        └─ 68보0632/
-│           ├─ maintenance-records.json
-│           ├─ odometer-history.json
-│           ├─ profile.json
-│           ├─ scheduled-maintenance.json
-│           ├─ storage-summary.json
-│           ├─ photos/
-│           └─ receipts/
-├─ src/
-│  ├─ App.tsx
-│  ├─ components/
-│  │  ├─ layout/AppShell.tsx
-│  │  └─ ui.tsx
-│  ├─ constants/
-│  │  ├─ app.ts
-│  │  └─ maintenanceItems.ts
-│  ├─ context/AppContext.tsx
-│  ├─ lib/
-│  │  ├─ format.ts
-│  │  ├─ image.ts
-│  │  ├─ password.ts
-│  │  ├─ selectors.ts
-│  │  ├─ storage.ts
-│  │  ├─ utils.ts
-│  │  └─ validation.ts
-│  ├─ pages/
-│  │  ├─ ActivateAccountPage.tsx
-│  │  ├─ BackupsPage.tsx
-│  │  ├─ HomePage.tsx
-│  │  ├─ LoginPage.tsx
-│  │  ├─ MaintenanceRecordsPage.tsx
-│  │  ├─ ScheduledMaintenancePage.tsx
-│  │  ├─ SettingsPage.tsx
-│  │  └─ StatisticsPage.tsx
-│  ├─ services/
-│  │  ├─ carDiaryRepository.ts
-│  │  └─ githubApi.ts
-│  └─ types/models.ts
-└─ tools/
-   ├─ allowed_vehicle_ids.txt
-   └─ build_allowed_users.py
+public/
+  data/
+    allowed_users.json
+    allowed_users.meta.json
+  repository-data/
+    users/
+      {vehicleId}/
+        profile.json
+        odometer-history.json
+        maintenance-records.json
+        scheduled-maintenance.json
+        storage-summary.json
+        photos/
+        receipts/
 ```
 
-## 3. 기술 선택 이유
+### 3-1. `allowed_users.json`
 
-### React + TypeScript + Vite
-
-- 정적 앱에 적합합니다.
-- 컴포넌트 분리와 타입 안정성이 좋습니다.
-- GitHub Pages 배포가 단순합니다.
-
-### Tailwind CSS
-
-- 다크 테마 카드 UI를 빠르게 일관되게 만들 수 있습니다.
-- shadcn/ui 스타일의 정제된 컴포넌트 패턴을 직접 구현하기 좋습니다.
-
-### Recharts
-
-- 월별/연도별 비용과 주행거리 그래프를 빠르게 구성할 수 있습니다.
-
-### GitHub Contents API
-
-- 서버 없이 파일 단위 CRUD가 가능합니다.
-- JSON/이미지 저장 구조가 직관적입니다.
-- `sha` 기반으로 업데이트 충돌 흐름을 이해하기 쉽습니다.
-
-## 4. 데이터 구조 / JSON 문서 모델
-
-### 4-1. 저장 구조
-
-```text
-public/data/allowed_users.json
-public/data/allowed_users.meta.json
-public/repository-data/users/{vehicleId}/profile.json
-public/repository-data/users/{vehicleId}/odometer-history.json
-public/repository-data/users/{vehicleId}/maintenance-records.json
-public/repository-data/users/{vehicleId}/scheduled-maintenance.json
-public/repository-data/users/{vehicleId}/storage-summary.json
-public/repository-data/users/{vehicleId}/photos/*
-public/repository-data/users/{vehicleId}/receipts/*
+```json
+[
+  {
+    "vehicleId": "68보0632",
+    "displayName": "68보0632",
+    "profilePath": "public/repository-data/users/68보0632/profile.json",
+    "notes": null
+  }
+]
 ```
 
-### 4-2. 엔티티 요약
-
-#### AllowedUserBuildSource
-
-- 문서상 개념
-- 로컬의 `tools/allowed_vehicle_ids.txt` 원본 행 정보
-- GitHub에는 원본 txt를 그대로 올리지 않습니다
-
-#### AllowedUserPublicEntry
-
-- `vehicleId: string`
-- `displayName: string`
-- `status: 'pending' | 'activated'`
-- `passwordSalt: string | null`
-- `passwordHash: string | null`
-- `activatedAt: string | null`
-- `passwordUpdatedAt: string | null`
-- `profilePath: string`
-- `notes: string | null`
-
-예시:
+### 3-2. `profile.json`
 
 ```json
 {
   "vehicleId": "68보0632",
-  "displayName": "68보0632",
-  "status": "activated",
-  "passwordSalt": "demo-salt-cardiary",
-  "passwordHash": "Q7ECBzt9PBDKGciYWAGe74b41w139OIlSKDrl28/ooU=",
-  "activatedAt": "2026-04-03T03:00:00.000Z",
-  "passwordUpdatedAt": "2026-04-03T03:00:00.000Z",
-  "profilePath": "public/repository-data/users/68보0632/profile.json",
-  "notes": "demo account"
+  "nickname": "68보0632",
+  "manufacturer": "",
+  "modelName": "차량 정보 미입력",
+  "trim": "",
+  "modelYear": 2026,
+  "fuelType": "미입력",
+  "purchaseDate": null,
+  "currentOdometerKm": 0,
+  "createdAt": "2026-04-03T00:00:00.000Z",
+  "updatedAt": "2026-04-03T00:00:00.000Z",
+  "notes": ""
 }
 ```
 
-#### UserProfile
+### 3-3. `maintenance-records.json`
 
-- 차량 기본 정보와 현재 주행거리
-- 홈 화면 상단 카드와 설정에서 사용
-
-주요 필드:
-
-- `vehicleId`
-- `nickname`
-- `manufacturer`
-- `modelName`
-- `trim`
-- `modelYear`
-- `fuelType`
-- `purchaseDate`
-- `currentOdometerKm`
-- `createdAt`
-- `updatedAt`
-- `notes`
-
-#### OdometerHistory
-
-- 현재 주행거리와 이력 배열을 함께 저장
-- `entries[]`의 각 항목은 기록 시점, 주행거리, 출처를 가짐
-
-#### MaintenanceRecord / MaintenanceRecordItem
-
-- 완료 정비 기록 문서
-- 한 건의 정비에 복수 항목 선택 가능
-- 비용, 사진, 영수증, 대표사진, 메모 포함
-
-#### ScheduledMaintenance
-
-- 예정일 또는 목표주행거리 기반 정비 계획
-- 둘 중 하나만 있어도 등록 가능
-- 완료 처리 또는 정비내역 전환 가능
-
-#### AttachmentPhoto
-
-- 업로드 파일 메타데이터
-- `path`는 GitHub Repository 파일 경로
-- 렌더링 시 raw GitHub URL로 변환
-
-#### StorageUsageSummary
-
-- 사용자별 총 사용량 요약
-- JSON 용량 + 첨부 용량
-- 300MB 초과 시 업로드 차단
-
-#### AppSettings
-
-- 브라우저 `localStorage`에 저장되는 앱 설정
-- `repoOwner`, `repoName`, `branch`, `dataRootPath`, `allowedUsersPath`, `token` 포함
-
-### 4-3. 관계 설명
-
-- `AllowedUserPublicEntry.vehicleId` = `UserProfile.vehicleId`
-- `MaintenanceRecord.scheduledSourceId`는 정비예정에서 전환된 원본 ID를 가리킬 수 있음
-- `ScheduledMaintenance.completedByRecordId`는 완료 처리된 정비내역 ID를 참조함
-- `StorageUsageSummary`는 `MaintenanceRecord.photos/receiptPhotos`와 각 JSON 문서를 합산한 결과임
-
-## 5. GitHub API 연동 방식
-
-### 5-1. 공개 읽기
-
-- `src/services/githubApi.ts`
-- `buildRawPublicUrl()`로 raw GitHub URL 생성
-- 로컬 개발 중에는 `public/` 상대 경로를 사용
-- 배포 환경에서는 raw GitHub URL을 사용해 최신 데이터를 직접 읽음
-
-### 5-2. 쓰기
-
-- GitHub REST API `repos/{owner}/{repo}/contents/{path}`
-- 순서:
-  1. 현재 파일의 `sha` 조회
-  2. base64 인코딩된 새 내용과 함께 `PUT`
-  3. 삭제는 `DELETE`
-
-### 5-3. 이미지 업로드
-
-- 브라우저 캔버스로 리사이즈/압축
-- base64 인코딩
-- GitHub Contents API로 `public/repository-data/users/{vehicleId}/photos/*` 또는 `receipts/*`에 업로드
-
-### 5-4. 에러 UX
-
-- 401: token 오류 또는 권한 부족
-- 403 + `x-ratelimit-remaining=0`: rate limit 경고
-- 404: 대상 파일 없음
-- 앱에서는 토스트와 메시지로 보여줌
-
-## 6. 핵심 UI 화면 설계
-
-### 홈
-
-- 로그인 차량번호
-- 현재 주행거리
-- 주행거리 갱신 폼
-- 정비예정 요약 카드
-- 최근 정비내역 카드
-- 경고/알림 배너
-- 이번 달 지출
-- 연간 누적 정비비
-- 저장공간 사용량
-- 최근 업로드 사진
-- 빠른 액션
-
-### 정비내역
-
-- 날짜/업체/비용/메모/사진/영수증 입력
-- 정비항목 복수 선택
-- 날짜순/비용순/주행거리순 정렬
-- 기간/항목/비용 범위 필터
-- 수정/삭제/복제 지원
-
-### 정비예정
-
-- 예정일 또는 목표주행거리 등록
-- 중요도 표시
-- 정비내역으로 전환 버튼
-- 완료만 표시 버튼
-
-### 통계
-
-- 연도별 연평균 주행거리
-- 연도별 연평균 정비비
-- 월별 주행거리 그래프
-- 월별 정비비 그래프
-- 정비항목별 지출 비중
-- 정비 건수 통계
-- 최근 12개월 추이
-
-## 7. 실행 방법
-
-### 7-1. 의존성 설치
-
-```bash
-npm install
+```json
+{
+  "vehicleId": "68보0632",
+  "records": [],
+  "updatedAt": "2026-04-03T00:00:00.000Z"
+}
 ```
 
-### 7-2. 허용 차량번호 파일 생성/갱신
+### 3-4. `scheduled-maintenance.json`
+
+```json
+{
+  "vehicleId": "68보0632",
+  "items": [],
+  "updatedAt": "2026-04-03T00:00:00.000Z"
+}
+```
+
+### 3-5. `storage-summary.json`
+
+```json
+{
+  "vehicleId": "68보0632",
+  "limitBytes": 314572800,
+  "usedBytes": 0,
+  "jsonBytes": 0,
+  "attachmentBytes": 0,
+  "percentUsed": 0,
+  "fileBreakdown": [],
+  "updatedAt": "2026-04-03T00:00:00.000Z"
+}
+```
+
+## 4. 허용 차량번호 관리 방법
+
+### 4-1. 원본 파일
+
+경로:
+
+```text
+tools/allowed_vehicle_ids.txt
+```
+
+형식:
+
+- 한 줄에 차량번호 1개
+- 빈 줄 무시
+- `#`로 시작하는 줄은 주석
+
+샘플:
+
+```text
+# allowed vehicle ids
+68보0632
+123가4567
+45나8888
+```
+
+### 4-2. 빌드 명령
 
 ```bash
 python tools/build_allowed_users.py
@@ -342,68 +152,9 @@ python tools/build_allowed_users.py
 build_allowed_users.bat
 ```
 
-### 7-3. 개발 서버 실행
+### 4-3. 콘솔 출력 예시
 
-```bash
-npm run dev
-```
-
-### 7-4. 프로덕션 빌드
-
-```bash
-npm run build
-```
-
-## 8. GitHub Pages 배포 방법
-
-이 프로젝트는 루트 경로 배포를 전제로 설계되어 있습니다.
-
-권장 방식:
-
-1. 이 소스 저장소를 `car-diary.github.io` 리포에 둡니다.
-2. GitHub Actions 또는 직접 업로드 방식으로 Vite 빌드 결과를 Pages에 배포합니다.
-3. 앱 설정의 기본값을 다음과 같이 유지합니다.
-   - `repoOwner = car-diary`
-   - `repoName = car-diary.github.io`
-   - `branch = main`
-   - `dataRootPath = public/repository-data`
-   - `allowedUsersPath = public/data/allowed_users.json`
-
-핵심 포인트:
-
-- 앱 정적 번들은 Pages에서 서빙됩니다.
-- 최신 JSON/이미지는 raw GitHub URL로 직접 읽기 때문에, 데이터 조회는 Pages 재빌드 없이도 최신 리포 상태를 반영합니다.
-
-## 9. 허용 차량번호 추가 방법
-
-초보자용 관리자 흐름:
-
-1. `tools/allowed_vehicle_ids.txt`를 메모장으로 엽니다.
-2. 차량번호를 한 줄 추가/삭제합니다.
-3. 저장합니다.
-4. `build_allowed_users.bat` 또는 `python tools/build_allowed_users.py`를 실행합니다.
-5. 생성된 `public/data/allowed_users.json`, `public/data/allowed_users.meta.json`을 커밋/푸시합니다.
-
-### 9-1. `tools/allowed_vehicle_ids.txt` 샘플 내용
-
-```text
-# allowed vehicle ids
-68보0632
-123가4567
-45나8888
-```
-
-### 9-2. 빌드 스크립트 특징
-
-- 빈 줄 무시
-- `#` 주석 줄 무시
-- 차량번호 형식 검증
-- 줄 번호 기반 형식 오류 출력
-- 줄 번호 기반 중복 출력
-- 기존 `allowed_users.json`의 활성화 상태와 해시를 보존
-- 원본 txt가 없으면 샘플 파일 자동 생성
-
-### 9-3. 성공 출력 예시
+정상 예시:
 
 ```text
 === allowed users build summary ===
@@ -411,92 +162,110 @@ npm run build
 유효한 차량번호 수: 3
 형식 오류 수: 0
 중복 차량번호 수: 0
-출력 파일: C:\Users\JW\Desktop\CarDiary\public\data\allowed_users.json
-메타 파일: C:\Users\JW\Desktop\CarDiary\public\data\allowed_users.meta.json
+출력 파일: C:\...\public\data\allowed_users.json
+메타 파일: C:\...\public\data\allowed_users.meta.json
 
 [done] allowed_users.json 생성이 완료되었습니다.
 ```
 
-### 9-4. 중복/오류 출력 예시
-
-예시 원본:
+오류 예시:
 
 ```text
-# allowed vehicle ids
-68보0632
-68보0632
-12잘못345
-```
-
-예시 출력:
-
-```text
-=== allowed users build summary ===
-읽은 차량번호 수: 3
-유효한 차량번호 수: 1
-형식 오류 수: 1
-중복 차량번호 수: 1
-
 [error] 잘못된 차량번호 형식
-  - line 4: 12잘못345
+  - line 4: 12345678
 
 [error] 중복 차량번호
-  - 68보0632: first line 2, duplicate line 3
+  - 68보0632: first line 2, duplicate line 5
 
 [fail] 오류를 수정한 뒤 다시 실행하세요.
 ```
 
-## 10. GitHub token 설정 방법
+## 5. 실행 방법
 
-이 앱은 GitHub password가 아니라 Personal Access Token을 사용합니다.
+```bash
+npm install
+npm run dev
+```
 
-권장:
+배포용 빌드:
 
-- Fine-grained Personal Access Token
-- 대상 리포: `car-diary.github.io`
-- 권한: `Contents` read/write
+```bash
+npm run build
+```
 
-설정 순서:
+## 6. GitHub Pages 배포
 
-1. GitHub에서 token 발급
-2. 앱 로그인 화면 또는 설정 화면에서 token 입력
-3. 브라우저 `localStorage`에 저장
-4. 이후 정비내역/정비예정/회원가입/이미지 업로드 가능
+이 저장소는 GitHub Actions로 Pages를 배포합니다.
 
-token이 없으면:
+워크플로:
 
-- 공개 데이터 조회만 가능
-- 쓰기 기능은 비활성화
+```text
+.github/workflows/deploy.yml
+```
 
-## 11. 주의사항 및 한계
+동작:
 
-- 강보안 인증 시스템이 아닙니다.
-- 공개 리포 기반이므로 민감한 개인정보 저장에 적합하지 않습니다.
-- token은 브라우저 localStorage에 저장됩니다.
-- GitHub API rate limit 영향을 받을 수 있습니다.
-- 첨부 이미지는 export JSON에 포함되지 않고 GitHub 파일 경로를 참조합니다.
-- 대량 이미지 업로드가 많아지면 리포 크기와 커밋 수가 빠르게 증가할 수 있습니다.
+1. `main` 브랜치 푸시
+2. `python tools/build_allowed_users.py`
+3. `npm run build`
+4. `dist` 업로드
+5. GitHub Pages 배포
 
-## 12. 향후 확장 포인트
+## 7. GitHub 저장 연동
 
-- 사용자별 썸네일 별도 저장
-- 이미지 업로드 큐와 재시도
-- 정비주기 추천 로직 강화
-- Left/Right 세분화가 가능한 정비항목 구조 확장
-- 여러 차량 동시 전환 뷰
-- SQLite 또는 서버 DB로 이관 가능한 어댑터 계층 추가
+- 읽기: `raw.githubusercontent.com` 경로에서 공개 JSON/이미지 조회
+- 쓰기: GitHub Contents API 사용
+- 이미지 업로드: 압축 후 base64 변환 뒤 업로드
+- 삭제: Contents API의 `DELETE` 사용
 
-## 13. 샘플 데이터
+## 8. 설정 값
 
-현재 샘플 계정:
+주요 설정 파일:
 
-- 차량번호: `68보0632`
-- 비밀번호: `cardiary123!`
+```text
+src/constants/app.ts
+```
 
-샘플 데이터 구성:
+기본값:
 
-- 정비내역 4건
-- 정비예정 3건
-- 최근 사진 4장
-- 영수증 2장
-- 주행거리 이력 4건
+- `repoOwner: car-diary`
+- `repoName: car-diary.github.io`
+- `branch: main`
+- `dataRootPath: public/repository-data`
+- `allowedUsersPath: public/data/allowed_users.json`
+- `storageLimitBytes: 300MB`
+
+## 9. 배포 빌드용 저장 권한 값
+
+GitHub Actions secret:
+
+```text
+VITE_GITHUB_TOKEN
+```
+
+워크플로는 이 값을 `VITE_GITHUB_TOKEN` 환경 변수로 빌드에 주입합니다.
+
+중요:
+
+- 이 값은 클라이언트 번들에 포함될 수 있습니다.
+- 따라서 강한 보안이 필요한 프로젝트에는 적합하지 않습니다.
+- 이 저장소는 개인 운영 편의와 단순한 구조를 우선합니다.
+
+## 10. 현재 포함 기능
+
+- 차량번호 로그인
+- 홈 대시보드
+- 주행거리 갱신
+- 정비내역 등록, 수정, 삭제, 복제
+- 정비예정 등록, 완료 처리, 삭제
+- 통계 차트
+- 사진 및 영수증 업로드
+- 저장공간 사용량 계산
+- 내보내기, 가져오기, CSV 내보내기
+
+## 11. 개발 메모
+
+- 정비항목은 코드 상수로 관리합니다.
+- `프론트` / `리어` 표현을 통일합니다.
+- 저장공간 한도는 계정당 300MB입니다.
+- 공개 저장소 특성상 민감 정보 저장은 피해야 합니다.

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useApp } from '../context/AppContext'
 import { formatBytes } from '../lib/format'
@@ -26,9 +26,13 @@ export const SettingsPage = () => {
   const [status, setStatus] = useState<string | null>(null)
   const [isTesting, setIsTesting] = useState(false)
 
+  useEffect(() => {
+    setDraft(settings)
+  }, [settings])
+
   const handleSave = () => {
     saveSettings(draft)
-    setStatus('설정을 저장했습니다. 새 설정은 즉시 반영됩니다.')
+    setStatus('저장소 설정을 업데이트했습니다.')
   }
 
   const handleTest = async () => {
@@ -38,9 +42,11 @@ export const SettingsPage = () => {
       saveSettings(draft)
       await testGitHubConnection()
       await refreshAllowedUsers()
-      setStatus('GitHub 연결을 확인했습니다.')
+      setStatus('저장소 연결과 허용 차량 목록을 다시 확인했습니다.')
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '연결 테스트에 실패했습니다.')
+      setStatus(
+        error instanceof Error ? error.message : '저장소 연결 확인에 실패했습니다.',
+      )
     } finally {
       setIsTesting(false)
     }
@@ -50,14 +56,14 @@ export const SettingsPage = () => {
     <div className="space-y-6">
       <PageHero
         title="운영 설정"
-        description="GitHub Repository owner/name/branch, token, 데이터 경로를 관리합니다. token은 강보안 비밀값이 아니라 가벼운 운영 편의를 위한 값으로 localStorage에 저장됩니다."
+        description="저장소 경로와 데이터 위치를 확인하고, 현재 빌드의 동기화 상태를 점검합니다."
       />
 
       <div className="grid gap-6 xl:grid-cols-[1fr_0.85fr]">
         <Card>
           <SectionTitle
-            title="GitHub 연결 설정"
-            description="Contents API와 raw GitHub URL이 모두 이 값을 사용합니다."
+            title="저장소 경로"
+            description="GitHub Pages 배포 주소와 실제 데이터 저장 경로를 같은 저장소 기준으로 관리합니다."
           />
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <Field label="Repository Owner">
@@ -103,31 +109,11 @@ export const SettingsPage = () => {
                 }
               />
             </Field>
-            <Field label="GitHub Token">
-              <Input
-                type="password"
-                value={draft.token}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, token: event.target.value }))
-                }
-                placeholder="ghp_..."
-              />
-            </Field>
           </div>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <Button onClick={handleSave}>설정 저장</Button>
             <Button variant="secondary" onClick={handleTest} disabled={isTesting}>
-              {isTesting ? '테스트 중...' : 'GitHub 연결 확인'}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const cleared = { ...draft, token: '' }
-                setDraft(cleared)
-                saveSettings(cleared)
-              }}
-            >
-              token 지우기
+              {isTesting ? '연결 확인 중...' : '저장소 연결 확인'}
             </Button>
           </div>
           {status ? <p className="mt-4 text-sm text-muted">{status}</p> : null}
@@ -135,13 +121,21 @@ export const SettingsPage = () => {
 
         <div className="space-y-6">
           <Card>
-            <SectionTitle title="운영 모드" description="쓰기 가능 여부와 저장공간 현황" />
+            <SectionTitle
+              title="동기화 상태"
+              description="현재 실행 중인 빌드가 기록 저장까지 가능한지 확인합니다."
+            />
             <div className="mt-5 flex items-center justify-between">
-              <span className="text-sm text-text">현재 모드</span>
+              <span className="text-sm text-text">현재 상태</span>
               <Badge tone={isReadOnly ? 'warn' : 'success'}>
-                {isReadOnly ? '읽기 전용' : 'GitHub 직접 쓰기'}
+                {isReadOnly ? '조회 전용' : '저장 연결됨'}
               </Badge>
             </div>
+            <p className="mt-4 text-sm leading-6 text-muted">
+              {isReadOnly
+                ? '현재 환경은 공개 데이터 조회 중심으로 동작합니다.'
+                : '정비내역, 정비예정, 주행거리, 첨부 파일까지 바로 저장할 수 있습니다.'}
+            </p>
             {userBundle ? (
               <div className="mt-5">
                 <p className="text-sm text-muted">
@@ -165,12 +159,11 @@ export const SettingsPage = () => {
           </Card>
 
           <Card>
-            <p className="text-sm font-semibold">주의사항</p>
+            <p className="text-sm font-semibold">운영 메모</p>
             <ul className="mt-4 space-y-2 text-sm leading-6 text-muted">
-              <li>GitHub password는 사용하지 말고 Personal Access Token만 사용하세요.</li>
-              <li>token은 강한 보안 저장소가 아니라 브라우저 localStorage에 저장됩니다.</li>
-              <li>공개 저장소 구조이므로 민감한 개인정보는 저장하지 않는 편이 좋습니다.</li>
-              <li>Pages는 앱 배포용이고, 최신 데이터 조회는 raw GitHub 경로를 우선 사용합니다.</li>
+              <li>허용 차량 목록은 `tools/allowed_vehicle_ids.txt`를 수정한 뒤 다시 빌드합니다.</li>
+              <li>사이트는 정적으로 배포되지만, 실제 차량 데이터는 저장소 JSON과 이미지 파일에 기록됩니다.</li>
+              <li>공개 저장소 구조이므로 민감한 개인정보나 강한 보안이 필요한 데이터는 올리지 않는 편이 안전합니다.</li>
             </ul>
           </Card>
         </div>

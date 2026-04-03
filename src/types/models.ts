@@ -1,4 +1,3 @@
-export type AllowedUserStatus = 'pending' | 'activated'
 export type PriorityLevel = 'low' | 'normal' | 'high'
 export type AlertTone = 'danger' | 'warn' | 'info'
 export type AttachmentKind = 'photo' | 'receipt' | 'thumbnail'
@@ -13,11 +12,6 @@ export interface AllowedUserBuildSource {
 export interface AllowedUserPublicEntry {
   vehicleId: string
   displayName: string
-  status: AllowedUserStatus
-  passwordSalt: string | null
-  passwordHash: string | null
-  activatedAt: string | null
-  passwordUpdatedAt: string | null
   profilePath: string
   notes: string | null
 }
@@ -25,8 +19,6 @@ export interface AllowedUserPublicEntry {
 export interface AllowedUsersMeta {
   generatedAt: string
   totalEntries: number
-  activatedEntries: number
-  pendingEntries: number
   sourceDescription: string
 }
 

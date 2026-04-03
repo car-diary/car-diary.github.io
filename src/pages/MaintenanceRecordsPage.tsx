@@ -570,7 +570,7 @@ export const MaintenanceRecordsPage = () => {
             </div>
             {isReadOnly ? (
               <p className="text-sm text-muted">
-                읽기 전용 모드입니다. 설정에서 GitHub token을 넣어야 저장할 수 있습니다.
+                현재 이 실행 환경은 조회 전용입니다. 저장 연결이 포함된 빌드에서는 바로 기록할 수 있습니다.
               </p>
             ) : null}
           </form>

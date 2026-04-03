@@ -2,13 +2,11 @@ import type { AppSettings } from '../types/models'
 
 export const APP_NAME = 'Car Diary'
 export const STORAGE_LIMIT_BYTES = 300 * 1024 * 1024
-export const DEMO_VEHICLE_ID = '68보0632'
-export const DEMO_PASSWORD = 'cardiary123!'
+export const EMBEDDED_GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN?.trim() ?? ''
 
 export const ROUTES = {
   home: '/',
   login: '/login',
-  activate: '/activate',
   records: '/records',
   scheduled: '/scheduled',
   statistics: '/statistics',
@@ -34,7 +32,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   branch: 'main',
   dataRootPath: 'public/repository-data',
   allowedUsersPath: 'public/data/allowed_users.json',
-  token: '',
+  token: EMBEDDED_GITHUB_TOKEN,
   storageLimitBytes: STORAGE_LIMIT_BYTES,
   theme: 'dark',
   preferLocalPublicFiles: isLocalHost,

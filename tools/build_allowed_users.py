@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,7 +27,12 @@ class ParsedVehicleId:
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def validate_vehicle_id_format(value: str) -> bool:
@@ -38,19 +42,21 @@ def validate_vehicle_id_format(value: str) -> bool:
 def ensure_source_file() -> None:
     if SOURCE_PATH.exists():
         return
+
     SOURCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     SOURCE_PATH.write_text(SAMPLE_SOURCE, encoding="utf-8")
-    print("[info] allowed_vehicle_ids.txt 파일이 없어서 샘플 파일을 생성했습니다.")
+    print("[info] allowed_vehicle_ids.txt가 없어 샘플 파일을 생성했습니다.")
     print(f"[info] 샘플 경로: {SOURCE_PATH}")
 
 
 def load_existing_entries() -> dict[str, dict[str, Any]]:
     if not OUTPUT_PATH.exists():
         return {}
+
     try:
         payload = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
-        print("[warn] 기존 allowed_users.json 형식이 깨져 있어 보존 없이 새로 생성합니다.")
+        print("[warn] 기존 allowed_users.json 형식이 깨져 있어 새로 생성합니다.")
         return {}
 
     existing_entries: dict[str, dict[str, Any]] = {}
@@ -58,6 +64,7 @@ def load_existing_entries() -> dict[str, dict[str, Any]]:
         vehicle_id = str(entry.get("vehicleId", "")).strip()
         if vehicle_id:
             existing_entries[vehicle_id] = entry
+
     return existing_entries
 
 
@@ -94,11 +101,6 @@ def build_entry(vehicle_id: str, existing_entry: dict[str, Any] | None) -> dict[
     return {
         "vehicleId": vehicle_id,
         "displayName": existing_entry.get("displayName") or vehicle_id,
-        "status": existing_entry.get("status") or "pending",
-        "passwordSalt": existing_entry.get("passwordSalt"),
-        "passwordHash": existing_entry.get("passwordHash"),
-        "activatedAt": existing_entry.get("activatedAt"),
-        "passwordUpdatedAt": existing_entry.get("passwordUpdatedAt"),
         "profilePath": f"public/repository-data/users/{vehicle_id}/profile.json",
         "notes": existing_entry.get("notes"),
     }
@@ -111,12 +113,9 @@ def write_output(entries: list[dict[str, Any]]) -> None:
         encoding="utf-8",
     )
 
-    activated_count = sum(1 for entry in entries if entry.get("status") == "activated")
     meta_payload = {
         "generatedAt": utc_now(),
         "totalEntries": len(entries),
-        "activatedEntries": activated_count,
-        "pendingEntries": len(entries) - activated_count,
         "sourceDescription": "Generated from tools/allowed_vehicle_ids.txt",
     }
     META_PATH.write_text(
@@ -150,7 +149,9 @@ def print_summary(
         print("")
         print("[error] 중복 차량번호")
         for vehicle_id, first_line, duplicate_line in duplicate_entries:
-            print(f"  - {vehicle_id}: first line {first_line}, duplicate line {duplicate_line}")
+            print(
+                f"  - {vehicle_id}: first line {first_line}, duplicate line {duplicate_line}"
+            )
 
 
 def main() -> int:
@@ -160,9 +161,9 @@ def main() -> int:
     print_summary(read_count, valid_entries, invalid_entries, duplicate_entries)
 
     if invalid_entries or duplicate_entries:
-      print("")
-      print("[fail] 오류를 수정한 뒤 다시 실행하세요.")
-      return 1
+        print("")
+        print("[fail] 오류를 수정한 뒤 다시 실행하세요.")
+        return 1
 
     next_entries = [
         build_entry(item.vehicle_id, existing_entries.get(item.vehicle_id))

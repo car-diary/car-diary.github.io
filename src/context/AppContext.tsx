@@ -12,21 +12,15 @@ import { parseISO } from 'date-fns'
 import { DEFAULT_APP_SETTINGS, LOCAL_STORAGE_KEYS } from '../constants/app'
 import { MAINTENANCE_ITEM_LOOKUP } from '../constants/maintenanceItems'
 import { optimizeImageFile } from '../lib/image'
-import { generateSalt, hashPassword, verifyPassword } from '../lib/password'
 import { buildDashboardSummary, buildStatisticsSnapshot } from '../lib/selectors'
 import { calculateStorageUsageSummary } from '../lib/storage'
 import { createId, safeJsonParse } from '../lib/utils'
-import {
-  calculateTotalCost,
-  validateAttachmentFile,
-  validatePassword,
-} from '../lib/validation'
+import { calculateTotalCost, validateAttachmentFile } from '../lib/validation'
 import {
   createEmptyUserBundle,
   deleteAttachment,
   loadUserBundle,
   readAllowedUsers,
-  saveAllowedUsers,
   saveUserBundle,
   uploadAttachment,
 } from '../services/carDiaryRepository'
@@ -62,8 +56,7 @@ interface AppContextValue {
   toasts: ToastMessage[]
   saveSettings: (nextSettings: Partial<AppSettings>) => void
   refreshAllowedUsers: () => Promise<void>
-  login: (vehicleId: string, password: string) => Promise<void>
-  activateAccount: (vehicleId: string, password: string) => Promise<void>
+  login: (vehicleId: string) => Promise<void>
   logout: () => void
   pushToast: (toast: Omit<ToastMessage, 'id'>) => void
   dismissToast: (toastId: string) => void
@@ -94,9 +87,13 @@ const persistSession = (session: SessionState | null) => {
 
 const readLocalSettings = (): AppSettings => {
   const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.appSettings)
-  return raw
-    ? { ...DEFAULT_APP_SETTINGS, ...safeJsonParse<Partial<AppSettings>>(raw, {}) }
-    : DEFAULT_APP_SETTINGS
+  if (!raw) return DEFAULT_APP_SETTINGS
+  const parsed = safeJsonParse<Partial<AppSettings>>(raw, {})
+  return {
+    ...DEFAULT_APP_SETTINGS,
+    ...parsed,
+    token: parsed.token?.trim() ? parsed.token : DEFAULT_APP_SETTINGS.token,
+  }
 }
 
 const readLocalSession = (): SessionState | null => {
@@ -229,25 +226,29 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     persistSession(nextSession)
   }
 
-  const login = async (vehicleId: string, password: string) => {
+  const login = async (vehicleId: string) => {
     const user = allowedUsers.find((entry) => entry.vehicleId === vehicleId.trim())
     if (!user) {
       throw new Error('허용되지 않은 차량번호입니다.')
     }
-    if (user.status !== 'activated') {
-      throw new Error('아직 활성화되지 않은 차량번호입니다. 먼저 회원가입을 진행하세요.')
+    try {
+      const bundle = await loadUserBundle(settings, user.vehicleId)
+      setUserBundle(bundle)
+    } catch (error) {
+      if (error instanceof GitHubApiError && error.code === 'not_found') {
+        if (!settings.token) {
+          throw new Error('초기 차량 데이터 생성 권한이 없습니다.')
+        }
+        const initialBundle = createEmptyUserBundle(
+          user.vehicleId,
+          settings.storageLimitBytes,
+        )
+        await saveUserBundle(settings, initialBundle, `feat: initialize ${user.vehicleId}`)
+        setUserBundle(initialBundle)
+      } else {
+        throw error
+      }
     }
-    const isValid = await verifyPassword(
-      user.vehicleId,
-      password,
-      user.passwordSalt,
-      user.passwordHash,
-    )
-    if (!isValid) {
-      throw new Error('비밀번호가 올바르지 않습니다.')
-    }
-    const bundle = await loadUserBundle(settings, user.vehicleId)
-    setUserBundle(bundle)
     updateSession({
       vehicleId: user.vehicleId,
       loggedInAt: new Date().toISOString(),
@@ -256,54 +257,6 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       tone: 'success',
       title: '로그인 완료',
       description: `${user.vehicleId} 차량 데이터를 불러왔습니다.`,
-    })
-  }
-
-  const activateAccount = async (vehicleId: string, password: string) => {
-    if (!settings.token) {
-      throw new Error('회원가입에는 GitHub token이 필요합니다.')
-    }
-    const passwordError = validatePassword(password)
-    if (passwordError) {
-      throw new Error(passwordError)
-    }
-    const target = allowedUsers.find((entry) => entry.vehicleId === vehicleId.trim())
-    if (!target) {
-      throw new Error('허용 목록에 없는 차량번호입니다.')
-    }
-    if (target.status === 'activated') {
-      throw new Error('이미 활성화된 차량번호입니다.')
-    }
-
-    const salt = generateSalt()
-    const passwordHash = await hashPassword(vehicleId, password, salt)
-    const nextEntries = allowedUsers.map((entry) =>
-      entry.vehicleId === vehicleId
-        ? {
-            ...entry,
-            status: 'activated' as const,
-            activatedAt: new Date().toISOString(),
-            passwordUpdatedAt: new Date().toISOString(),
-            passwordSalt: salt,
-            passwordHash,
-          }
-        : entry,
-    )
-
-    const bundle = createEmptyUserBundle(vehicleId, settings.storageLimitBytes)
-    await saveAllowedUsers(settings, nextEntries)
-    await saveUserBundle(settings, bundle, `feat: initialize ${vehicleId}`)
-
-    setAllowedUsers(nextEntries)
-    setUserBundle(bundle)
-    updateSession({
-      vehicleId,
-      loggedInAt: new Date().toISOString(),
-    })
-    pushToast({
-      tone: 'success',
-      title: '회원가입 완료',
-      description: `${vehicleId} 계정이 활성화되었습니다.`,
     })
   }
 
@@ -798,7 +751,6 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       saveSettings,
       refreshAllowedUsers,
       login,
-      activateAccount,
       logout,
       pushToast,
       dismissToast,
