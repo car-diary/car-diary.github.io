@@ -1,40 +1,40 @@
 {
   "vehicleId": "68보0632",
   "limitBytes": 314572800,
-  "usedBytes": 15457,
-  "jsonBytes": 5956,
-  "attachmentBytes": 9501,
-  "percentUsed": 0.0,
+  "usedBytes": 14767,
+  "jsonBytes": 8307,
+  "attachmentBytes": 6460,
+  "percentUsed": 0,
   "fileBreakdown": [
     {
       "path": "profile.json",
-      "bytes": 482,
+      "bytes": 466,
       "kind": "json"
     },
     {
       "path": "odometer-history.json",
-      "bytes": 835,
+      "bytes": 878,
       "kind": "json"
     },
     {
       "path": "maintenance-records.json",
-      "bytes": 3504,
+      "bytes": 4906,
       "kind": "json"
     },
     {
       "path": "scheduled-maintenance.json",
-      "bytes": 1135,
+      "bytes": 2057,
       "kind": "json"
-    },
-    {
-      "path": "public/repository-data/users/68보0632/photos/tires-overview.svg",
-      "bytes": 1894,
-      "kind": "photo"
     },
     {
       "path": "public/repository-data/users/68보0632/photos/brake-service.svg",
       "bytes": 1842,
       "kind": "photo"
+    },
+    {
+      "path": "public/repository-data/users/68보0632/receipts/receipt-brake.svg",
+      "bytes": 1128,
+      "kind": "receipt"
     },
     {
       "path": "public/repository-data/users/68보0632/photos/engine-oil.svg",
@@ -45,17 +45,7 @@
       "path": "public/repository-data/users/68보0632/photos/battery-replacement.svg",
       "bytes": 1722,
       "kind": "photo"
-    },
-    {
-      "path": "public/repository-data/users/68보0632/receipts/receipt-tires.svg",
-      "bytes": 1147,
-      "kind": "receipt"
-    },
-    {
-      "path": "public/repository-data/users/68보0632/receipts/receipt-brake.svg",
-      "bytes": 1128,
-      "kind": "receipt"
     }
   ],
-  "updatedAt": "2026-03-29T06:40:00.000Z"
+  "updatedAt": "2026-04-03T10:08:29.106Z"
 }
