@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200">
+  <rect width="900" height="1200" fill="#f6f7fb"/>
+  <rect x="90" y="80" width="720" height="1040" rx="28" fill="#ffffff" stroke="#ccd5e2" stroke-width="4"/>
+  <text x="130" y="170" font-size="42" font-family="Arial" fill="#0f172a">Receipt / Brake</text>
+  <text x="130" y="250" font-size="26" font-family="Arial" fill="#475569">Front brake pads</text>
+  <text x="130" y="320" font-size="26" font-family="Arial" fill="#475569">Brake fluid service</text>
+  <text x="130" y="420" font-size="56" font-family="Arial" fill="#0f172a">286,000 KRW</text>
+</svg>

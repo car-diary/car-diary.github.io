@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960">
+  <rect width="1280" height="960" fill="#101722"/>
+  <rect x="80" y="100" width="1120" height="760" rx="44" fill="#162130" stroke="#6cb7ff" stroke-width="4"/>
+  <circle cx="380" cy="540" r="180" fill="#24364d"/>
+  <circle cx="900" cy="540" r="180" fill="#24364d"/>
+  <circle cx="380" cy="540" r="108" fill="#0b1119" stroke="#8bd4ff" stroke-width="10"/>
+  <circle cx="900" cy="540" r="108" fill="#0b1119" stroke="#8bd4ff" stroke-width="10"/>
+  <text x="100" y="170" fill="#edf4ff" font-size="48" font-family="Arial">Tire Replacement</text>
+  <text x="100" y="225" fill="#9ba7ba" font-size="28" font-family="Arial">Front + Rear tires / wheel alignment</text>
+</svg>

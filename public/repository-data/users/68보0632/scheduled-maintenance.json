@@ -1,0 +1,72 @@
+{
+  "vehicleId": "68보0632",
+  "items": [
+    {
+      "id": "schedule_coolant_202604",
+      "title": "냉각수 교환 예정",
+      "items": [
+        {
+          "code": "engine-oil:냉각수 교환",
+          "categoryKey": "engine-oil",
+          "label": "냉각수 교환",
+          "isCustom": false
+        }
+      ],
+      "scheduledDate": "2026-04-05",
+      "targetOdometerKm": 83000,
+      "expectedCost": 120000,
+      "priority": "high",
+      "notes": "장거리 주행 전 점검 포함",
+      "status": "pending",
+      "createdAt": "2026-03-01T03:00:00.000Z",
+      "updatedAt": "2026-03-01T03:00:00.000Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    },
+    {
+      "id": "schedule_ac_filter_202604",
+      "title": "에어컨 필터 교환",
+      "items": [
+        {
+          "code": "engine-oil:에어컨 필터 교환",
+          "categoryKey": "engine-oil",
+          "label": "에어컨 필터 교환",
+          "isCustom": false
+        }
+      ],
+      "scheduledDate": "2026-04-18",
+      "targetOdometerKm": null,
+      "expectedCost": 35000,
+      "priority": "normal",
+      "notes": "봄철 꽃가루 시즌 전 교체",
+      "status": "pending",
+      "createdAt": "2026-03-10T01:00:00.000Z",
+      "updatedAt": "2026-03-10T01:00:00.000Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    },
+    {
+      "id": "schedule_wiper_202606",
+      "title": "와이퍼 교체",
+      "items": [
+        {
+          "code": "consumables:와이퍼 교체",
+          "categoryKey": "consumables",
+          "label": "와이퍼 교체",
+          "isCustom": false
+        }
+      ],
+      "scheduledDate": null,
+      "targetOdometerKm": 86000,
+      "expectedCost": 28000,
+      "priority": "low",
+      "notes": "우기 오기 전에 교체 예정",
+      "status": "pending",
+      "createdAt": "2026-03-12T05:00:00.000Z",
+      "updatedAt": "2026-03-12T05:00:00.000Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    }
+  ],
+  "updatedAt": "2026-03-12T05:00:00.000Z"
+}

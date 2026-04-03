@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960">
+  <rect width="1280" height="960" fill="#090d14"/>
+  <rect x="96" y="96" width="1088" height="768" rx="48" fill="#141f2d" stroke="#49d39a" stroke-width="4"/>
+  <circle cx="640" cy="500" r="220" fill="#223246"/>
+  <circle cx="640" cy="500" r="128" fill="#090d14" stroke="#49d39a" stroke-width="18"/>
+  <rect x="820" y="360" width="150" height="220" rx="28" fill="#6cb7ff"/>
+  <text x="110" y="170" fill="#edf4ff" font-size="48" font-family="Arial">Brake Service</text>
+  <text x="110" y="225" fill="#9ba7ba" font-size="28" font-family="Arial">Front pads + brake fluid</text>
+</svg>

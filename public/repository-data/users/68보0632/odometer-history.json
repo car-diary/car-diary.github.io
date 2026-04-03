@@ -1,0 +1,35 @@
+{
+  "vehicleId": "68보0632",
+  "currentOdometerKm": 82750,
+  "entries": [
+    {
+      "id": "odo_20251103",
+      "recordedAt": "2025-11-03T02:30:00.000Z",
+      "odometerKm": 78120,
+      "source": "manual",
+      "note": "기존 장부 기준 시작값"
+    },
+    {
+      "id": "odo_20251218",
+      "recordedAt": "2025-12-18T10:20:00.000Z",
+      "odometerKm": 79840,
+      "source": "manual",
+      "note": "주유 후 기록"
+    },
+    {
+      "id": "odo_20260215",
+      "recordedAt": "2026-02-15T08:10:00.000Z",
+      "odometerKm": 81230,
+      "source": "maintenance",
+      "note": "브레이크 정비 기록 반영"
+    },
+    {
+      "id": "odo_20260329",
+      "recordedAt": "2026-03-29T06:30:00.000Z",
+      "odometerKm": 82750,
+      "source": "maintenance",
+      "note": "타이어 교체 시점 기록"
+    }
+  ],
+  "updatedAt": "2026-03-29T06:30:00.000Z"
+}

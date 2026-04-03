@@ -1,0 +1,220 @@
+{
+  "vehicleId": "68보0632",
+  "records": [
+    {
+      "id": "record_tires_20260329",
+      "date": "2026-03-29",
+      "odometerKm": 82750,
+      "items": [
+        {
+          "code": "tires:프론트 타이어 교체",
+          "categoryKey": "tires",
+          "label": "프론트 타이어 교체",
+          "isCustom": false
+        },
+        {
+          "code": "tires:리어 타이어 교체",
+          "categoryKey": "tires",
+          "label": "리어 타이어 교체",
+          "isCustom": false
+        },
+        {
+          "code": "tires:휠 얼라인먼트",
+          "categoryKey": "tires",
+          "label": "휠 얼라인먼트",
+          "isCustom": false
+        }
+      ],
+      "customItemsText": "",
+      "shopName": "스피드메이트 판교점",
+      "partsCost": 358000,
+      "laborCost": 80000,
+      "totalCost": 438000,
+      "notes": "프론트/리어 모두 교체 후 고속주행 떨림 확인 차 얼라인먼트까지 진행.",
+      "photos": [
+        {
+          "id": "photo_tires_01",
+          "kind": "photo",
+          "fileName": "tires-overview.svg",
+          "originalFileName": "tires-overview.svg",
+          "contentType": "image/svg+xml",
+          "bytes": 1894,
+          "width": 1280,
+          "height": 960,
+          "optimized": true,
+          "uploadedAt": "2026-03-29T06:30:00.000Z",
+          "path": "public/repository-data/users/68보0632/photos/tires-overview.svg"
+        }
+      ],
+      "receiptPhotos": [
+        {
+          "id": "receipt_tires_01",
+          "kind": "receipt",
+          "fileName": "receipt-tires.svg",
+          "originalFileName": "receipt-tires.svg",
+          "contentType": "image/svg+xml",
+          "bytes": 1147,
+          "width": 900,
+          "height": 1200,
+          "optimized": true,
+          "uploadedAt": "2026-03-29T06:40:00.000Z",
+          "path": "public/repository-data/users/68보0632/receipts/receipt-tires.svg"
+        }
+      ],
+      "representativePhotoId": "photo_tires_01",
+      "scheduledSourceId": null,
+      "createdAt": "2026-03-29T06:30:00.000Z",
+      "updatedAt": "2026-03-29T06:40:00.000Z"
+    },
+    {
+      "id": "record_brakes_20260215",
+      "date": "2026-02-15",
+      "odometerKm": 81230,
+      "items": [
+        {
+          "code": "brakes:프론트 브레이크패드 교환",
+          "categoryKey": "brakes",
+          "label": "프론트 브레이크패드 교환",
+          "isCustom": false
+        },
+        {
+          "code": "engine-oil:브레이크오일 교환",
+          "categoryKey": "engine-oil",
+          "label": "브레이크오일 교환",
+          "isCustom": false
+        }
+      ],
+      "customItemsText": "",
+      "shopName": "동탄 브레이크랩",
+      "partsCost": 206000,
+      "laborCost": 80000,
+      "totalCost": 286000,
+      "notes": "브레이크 페달 답력이 무른 느낌이 있어 패드와 브레이크오일을 함께 정비.",
+      "photos": [
+        {
+          "id": "photo_brake_01",
+          "kind": "photo",
+          "fileName": "brake-service.svg",
+          "originalFileName": "brake-service.svg",
+          "contentType": "image/svg+xml",
+          "bytes": 1842,
+          "width": 1280,
+          "height": 960,
+          "optimized": true,
+          "uploadedAt": "2026-02-15T08:10:00.000Z",
+          "path": "public/repository-data/users/68보0632/photos/brake-service.svg"
+        }
+      ],
+      "receiptPhotos": [
+        {
+          "id": "receipt_brake_01",
+          "kind": "receipt",
+          "fileName": "receipt-brake.svg",
+          "originalFileName": "receipt-brake.svg",
+          "contentType": "image/svg+xml",
+          "bytes": 1128,
+          "width": 900,
+          "height": 1200,
+          "optimized": true,
+          "uploadedAt": "2026-02-15T08:20:00.000Z",
+          "path": "public/repository-data/users/68보0632/receipts/receipt-brake.svg"
+        }
+      ],
+      "representativePhotoId": "photo_brake_01",
+      "scheduledSourceId": null,
+      "createdAt": "2026-02-15T08:10:00.000Z",
+      "updatedAt": "2026-02-15T08:20:00.000Z"
+    },
+    {
+      "id": "record_oil_20260106",
+      "date": "2026-01-06",
+      "odometerKm": 80320,
+      "items": [
+        {
+          "code": "engine-oil:엔진오일 교환",
+          "categoryKey": "engine-oil",
+          "label": "엔진오일 교환",
+          "isCustom": false
+        },
+        {
+          "code": "engine-oil:오일필터 교환",
+          "categoryKey": "engine-oil",
+          "label": "오일필터 교환",
+          "isCustom": false
+        },
+        {
+          "code": "engine-oil:에어필터 교환",
+          "categoryKey": "engine-oil",
+          "label": "에어필터 교환",
+          "isCustom": false
+        }
+      ],
+      "customItemsText": "",
+      "shopName": "현대 블루핸즈 분당점",
+      "partsCost": 98000,
+      "laborCost": 50000,
+      "totalCost": 148000,
+      "notes": "순정 규격 오일 사용. 다음 교환 주기는 8만 8천 km 기준으로 설정.",
+      "photos": [
+        {
+          "id": "photo_oil_01",
+          "kind": "photo",
+          "fileName": "engine-oil.svg",
+          "originalFileName": "engine-oil.svg",
+          "contentType": "image/svg+xml",
+          "bytes": 1768,
+          "width": 1280,
+          "height": 960,
+          "optimized": true,
+          "uploadedAt": "2026-01-06T02:00:00.000Z",
+          "path": "public/repository-data/users/68보0632/photos/engine-oil.svg"
+        }
+      ],
+      "receiptPhotos": [],
+      "representativePhotoId": "photo_oil_01",
+      "scheduledSourceId": null,
+      "createdAt": "2026-01-06T02:00:00.000Z",
+      "updatedAt": "2026-01-06T02:10:00.000Z"
+    },
+    {
+      "id": "record_battery_20251204",
+      "date": "2025-12-04",
+      "odometerKm": 79010,
+      "items": [
+        {
+          "code": "battery:배터리 교체",
+          "categoryKey": "battery",
+          "label": "배터리 교체",
+          "isCustom": false
+        }
+      ],
+      "customItemsText": "",
+      "shopName": "동네 배터리센터",
+      "partsCost": 138000,
+      "laborCost": 36000,
+      "totalCost": 174000,
+      "notes": "겨울 대비 선제 교체. 알터네이터 점검도 정상.",
+      "photos": [
+        {
+          "id": "photo_battery_01",
+          "kind": "photo",
+          "fileName": "battery-replacement.svg",
+          "originalFileName": "battery-replacement.svg",
+          "contentType": "image/svg+xml",
+          "bytes": 1722,
+          "width": 1280,
+          "height": 960,
+          "optimized": true,
+          "uploadedAt": "2025-12-04T04:10:00.000Z",
+          "path": "public/repository-data/users/68보0632/photos/battery-replacement.svg"
+        }
+      ],
+      "receiptPhotos": [],
+      "representativePhotoId": "photo_battery_01",
+      "scheduledSourceId": null,
+      "createdAt": "2025-12-04T04:10:00.000Z",
+      "updatedAt": "2025-12-04T04:20:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-03-29T06:40:00.000Z"
+}
