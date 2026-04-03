@@ -5,7 +5,7 @@ import {
   Plus,
   TrendingUp,
 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -14,6 +14,7 @@ import {
   Card,
   Field,
   Input,
+  Modal,
   ProgressBar,
   SectionTitle,
 } from '../components/ui'
@@ -30,7 +31,6 @@ import { getAttachmentUrl } from '../services/carDiaryRepository'
 
 export const HomePage = () => {
   const navigate = useNavigate()
-  const odometerSectionRef = useRef<HTMLDivElement | null>(null)
   const { userBundle, dashboardSummary, settings, updateOdometer } = useApp()
   const [odometerValue, setOdometerValue] = useState(
     String(userBundle?.profile.currentOdometerKm ?? 0),
@@ -38,6 +38,7 @@ export const HomePage = () => {
   const [forceSave, setForceSave] = useState(false)
   const [odometerNote, setOdometerNote] = useState('')
   const [odometerError, setOdometerError] = useState<string | null>(null)
+  const [isOdometerModalOpen, setIsOdometerModalOpen] = useState(false)
 
   if (!userBundle || !dashboardSummary) {
     return null
@@ -54,6 +55,12 @@ export const HomePage = () => {
       : userBundle.storageSummary.percentUsed >= 75
         ? 'warn'
         : 'info'
+
+  const openOdometerModal = () => {
+    setOdometerValue(String(userBundle.profile.currentOdometerKm))
+    setOdometerError(null)
+    setIsOdometerModalOpen(true)
+  }
 
   const handleOdometerSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -72,6 +79,7 @@ export const HomePage = () => {
       })
       setForceSave(false)
       setOdometerNote('')
+      setIsOdometerModalOpen(false)
     } catch (error) {
       setOdometerError(
         error instanceof Error ? error.message : '주행거리 저장에 실패했습니다.',
@@ -90,23 +98,16 @@ export const HomePage = () => {
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
               {userBundle.profile.vehicleId}
             </h1>
-            <p className="mt-4 text-sm text-muted">현재 주행거리</p>
-            <p className="mt-2 text-5xl font-semibold tracking-tight text-white">
-              {formatKilometers(dashboardSummary.latestOdometerKm)}
-            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <p className="text-5xl font-semibold tracking-tight text-white">
+                {formatKilometers(dashboardSummary.latestOdometerKm)}
+              </p>
+              <Button variant="secondary" size="sm" onClick={openOdometerModal}>
+                주행거리 갱신
+              </Button>
+            </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              className="min-w-[180px]"
-              onClick={() =>
-                odometerSectionRef.current?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start',
-                })
-              }
-            >
-              주행거리 갱신
-            </Button>
             <Button variant="secondary" onClick={() => navigate(ROUTES.records)}>
               <Plus className="h-4 w-4" />
               정비내역 추가
@@ -203,46 +204,12 @@ export const HomePage = () => {
         </Card>
       ) : null}
 
-      <div ref={odometerSectionRef}>
-        <Card className="border-accentSoft/20 bg-[linear-gradient(180deg,rgba(201,233,255,0.08),rgba(201,233,255,0.02))]">
-          <SectionTitle title="주행거리 갱신" />
-          <form className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_1fr_180px] lg:items-end" onSubmit={handleOdometerSubmit}>
-            <Field label="현재 주행거리 (km)">
-              <Input
-                type="number"
-                value={odometerValue}
-                onChange={(event) => setOdometerValue(event.target.value)}
-              />
-            </Field>
-            <Field label="메모">
-              <Input
-                value={odometerNote}
-                onChange={(event) => setOdometerNote(event.target.value)}
-              />
-            </Field>
-            <Button type="submit" className="w-full lg:h-11">
-              주행거리 갱신
-            </Button>
-          </form>
-          <label className="mt-4 flex items-center gap-2 text-sm text-muted">
-            <input
-              checked={forceSave}
-              onChange={(event) => setForceSave(event.target.checked)}
-              type="checkbox"
-              className="h-4 w-4 rounded border-border bg-panelAlt"
-            />
-            이전 기록보다 작아도 저장
-          </label>
-          {odometerError ? <p className="mt-3 text-sm text-danger">{odometerError}</p> : null}
-        </Card>
-      </div>
-
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <Card>
           <SectionTitle title="정비예정" />
           <div className="mt-5 space-y-3">
             {scheduledItems.length === 0 ? (
-              <p className="text-sm text-muted">등록된 정비예정이 없습니다.</p>
+              <p className="text-sm text-muted">-</p>
             ) : (
               scheduledItems.map((item) => (
                 <div key={item.id} className="rounded-2xl border border-border bg-panelAlt p-4">
@@ -282,7 +249,7 @@ export const HomePage = () => {
           <SectionTitle title="최근 정비내역" />
           <div className="mt-5 space-y-4">
             {recentRecords.length === 0 ? (
-              <p className="text-sm text-muted">아직 정비내역이 없습니다.</p>
+              <p className="text-sm text-muted">-</p>
             ) : (
               recentRecords.map((record) => (
                 <div key={record.id} className="rounded-3xl border border-border bg-panelAlt p-4">
@@ -299,7 +266,7 @@ export const HomePage = () => {
                         {formatShortDate(record.date)} · {formatKilometers(record.odometerKm)}
                       </p>
                       <p className="mt-1 text-sm text-muted">
-                        {record.shopName || '업체명 미입력'} · {formatCurrency(record.totalCost)}
+                        {record.shopName || '-'} · {formatCurrency(record.totalCost)}
                       </p>
                     </div>
                     <div className="text-sm text-muted">
@@ -332,6 +299,51 @@ export const HomePage = () => {
           </div>
         </Card>
       </div>
+
+      <Modal
+        open={isOdometerModalOpen}
+        title="주행거리 갱신"
+        onClose={() => setIsOdometerModalOpen(false)}
+      >
+        <form className="space-y-4" onSubmit={handleOdometerSubmit}>
+          <Field label="현재 주행거리 (km)">
+            <Input
+              type="number"
+              value={odometerValue}
+              onChange={(event) => setOdometerValue(event.target.value)}
+            />
+          </Field>
+          <Field label="메모">
+            <Input
+              value={odometerNote}
+              onChange={(event) => setOdometerNote(event.target.value)}
+            />
+          </Field>
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <input
+              checked={forceSave}
+              onChange={(event) => setForceSave(event.target.checked)}
+              type="checkbox"
+              className="h-4 w-4 rounded border-border bg-panelAlt"
+            />
+            이전 기록보다 작아도 저장
+          </label>
+          {odometerError ? <p className="text-sm text-danger">{odometerError}</p> : null}
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button type="submit" className="flex-1">
+              저장
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setIsOdometerModalOpen(false)}
+            >
+              취소
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

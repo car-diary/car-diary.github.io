@@ -51,7 +51,6 @@ export const LoginPage = () => {
             Car Diary
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">차량 로그인</h1>
-          <p className="mt-2 text-sm text-muted">차량번호만 입력하면 바로 들어갑니다.</p>
 
           <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
             <Field label="차량번호" error={error}>
