@@ -9,7 +9,7 @@ export const validateVehicleId = (value: string) => {
   const normalized = value.trim()
   if (!normalized) return '차량번호를 입력하세요.'
   if (!isValidVehicleId(normalized)) {
-    return '차량번호 형식이 올바르지 않습니다. 예: 68보0632, 123가4567'
+    return '차량번호 형식이 올바르지 않습니다.'
   }
   return null
 }

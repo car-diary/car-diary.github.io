@@ -440,11 +440,6 @@ export const MaintenanceRecordsPage = () => {
             </Button>
           </div>
 
-          {isReadOnly ? (
-            <p className="text-sm text-muted">
-              현재 환경은 조회 전용입니다. 저장 연결이 포함된 빌드에서 바로 기록할 수 있습니다.
-            </p>
-          ) : null}
         </form>
       </Card>
 

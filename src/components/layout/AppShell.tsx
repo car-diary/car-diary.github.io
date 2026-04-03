@@ -13,7 +13,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/app'
 import { useApp } from '../../context/AppContext'
 import { cn } from '../../lib/utils'
-import { Badge, Button, Card, IconButton, LoadingOverlay } from '../ui'
+import { Button, Card, IconButton, LoadingOverlay } from '../ui'
 
 const navItems = [
   { to: ROUTES.home, label: '홈', icon: Gauge },
@@ -27,7 +27,7 @@ const navItems = [
 export const AppShell = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { userBundle, session, logout, isReadOnly, isSaving } = useApp()
+  const { userBundle, session, logout, isSaving } = useApp()
   const nickname = userBundle?.profile.nickname || session?.vehicleId || '차량'
   const routeTitle =
     navItems.find((item) => item.to === location.pathname)?.label ?? 'Car Diary'
@@ -43,9 +43,6 @@ export const AppShell = () => {
                 Car Diary
               </p>
               <h1 className="mt-3 text-2xl font-semibold">{nickname}</h1>
-              <p className="mt-2 text-sm text-muted">
-                정비 기록, 예정 정비, 지출, 사진을 차량별로 정리합니다.
-              </p>
             </div>
             <nav className="space-y-2">
               {navItems.map(({ to, label, icon: Icon }) => (
@@ -66,20 +63,7 @@ export const AppShell = () => {
                 </NavLink>
               ))}
             </nav>
-            <div className="mt-auto space-y-4">
-              <div className="rounded-2xl border border-border bg-panelAlt p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-muted">
-                  Repository Sync
-                </p>
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-text">
-                    {isReadOnly ? '조회 중심 실행' : '저장 연결됨'}
-                  </span>
-                  <Badge tone={isReadOnly ? 'warn' : 'success'}>
-                    {isReadOnly ? '조회 전용' : '실시간 저장'}
-                  </Badge>
-                </div>
-              </div>
+            <div className="mt-auto">
               <Button
                 variant="secondary"
                 className="w-full justify-between"
@@ -111,12 +95,7 @@ export const AppShell = () => {
             <div className="flex flex-col gap-4 rounded-[2rem] border border-border/70 bg-gradient-to-r from-panel to-panelAlt px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-muted">로그인 차량</p>
-                <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <h2 className="text-2xl font-semibold">{session?.vehicleId}</h2>
-                  <Badge tone={isReadOnly ? 'warn' : 'success'}>
-                    {isReadOnly ? '조회 전용' : '기록 저장 가능'}
-                  </Badge>
-                </div>
+                <h2 className="mt-2 text-2xl font-semibold">{session?.vehicleId}</h2>
               </div>
               <div className="flex items-center gap-3">
                 <Button variant="secondary" onClick={() => navigate(ROUTES.settings)}>

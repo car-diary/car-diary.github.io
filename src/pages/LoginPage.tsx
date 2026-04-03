@@ -58,7 +58,6 @@ export const LoginPage = () => {
               <Input
                 value={vehicleId}
                 onChange={(event) => setVehicleId(event.target.value)}
-                placeholder="예: 68보0632"
                 autoComplete="off"
                 autoFocus
               />
