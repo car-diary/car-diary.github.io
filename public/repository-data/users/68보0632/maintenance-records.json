@@ -2,6 +2,31 @@
   "vehicleId": "68보0632",
   "records": [
     {
+      "id": "record_88f20a1c39ab4d23",
+      "date": "2026-04-04",
+      "odometerKm": 74600,
+      "items": [
+        {
+          "code": "consumables:자동차점검",
+          "categoryKey": "consumables",
+          "label": "자동차점검",
+          "isCustom": false
+        }
+      ],
+      "customItemsText": "",
+      "shopName": "공임나라 독산점",
+      "partsCost": 0,
+      "laborCost": 0,
+      "totalCost": 0,
+      "notes": "",
+      "photos": [],
+      "receiptPhotos": [],
+      "representativePhotoId": null,
+      "scheduledSourceId": null,
+      "createdAt": "2026-04-04T05:00:51.010Z",
+      "updatedAt": "2026-04-04T05:00:51.010Z"
+    },
+    {
       "id": "record_brakes_20260215",
       "date": "2026-02-15",
       "odometerKm": 81230,
@@ -151,5 +176,5 @@
       "updatedAt": "2025-12-04T04:20:00.000Z"
     }
   ],
-  "updatedAt": "2026-04-03T10:08:33.933Z"
+  "updatedAt": "2026-04-04T05:00:51.010Z"
 }
