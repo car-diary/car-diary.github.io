@@ -26,6 +26,7 @@ const createCategory = (
 export const MAINTENANCE_CATEGORIES: MaintenanceCategory[] = [
   createCategory('engine-oil', '엔진/오일류', [
     '엔진오일 교환',
+    '엔진오일 교환 SET',
     '엔진오일 보충',
     '오일필터 교환',
     '에어필터 교환',
@@ -101,6 +102,7 @@ export const MAINTENANCE_CATEGORIES: MaintenanceCategory[] = [
     '휠 얼라인먼트',
     '휠 밸런스',
     '서스펜션 점검/교체',
+    '변속기 마운트 점검/교체',
     '쇼크업소버 교환',
     '로어암 점검/교체',
     '타이로드엔드 점검/교체',
