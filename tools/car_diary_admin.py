@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 import sys
 import threading
@@ -88,6 +89,29 @@ def append_vehicle_id(vehicle_id: str) -> bool:
     content = SOURCE_PATH.read_text(encoding=UTF8)
     suffix = "" if content.endswith(("\n", "\r")) or not content else "\n"
     SOURCE_PATH.write_text(f"{content}{suffix}{vehicle_id}\n", encoding=UTF8)
+    return True
+
+
+def remove_vehicle_id(vehicle_id: str) -> bool:
+    ensure_source_file()
+    remaining_lines: list[str] = []
+    removed = False
+
+    for raw_line in SOURCE_PATH.read_text(encoding=UTF8).splitlines():
+        stripped = raw_line.strip()
+        if stripped and not stripped.startswith("#") and stripped == vehicle_id:
+            removed = True
+            continue
+        remaining_lines.append(raw_line)
+
+    if not removed:
+        return False
+
+    next_content = "\n".join(remaining_lines).rstrip()
+    SOURCE_PATH.write_text(
+        f"{next_content}\n" if next_content else "",
+        encoding=UTF8,
+    )
     return True
 
 
@@ -220,6 +244,20 @@ def ensure_user_bundle(vehicle_id: str) -> bool:
     return created
 
 
+def delete_user_bundle(vehicle_id: str) -> bool:
+    user_dir = USER_ROOT / vehicle_id
+    if not user_dir.exists():
+        return False
+
+    resolved_root = USER_ROOT.resolve()
+    resolved_dir = user_dir.resolve()
+    if resolved_dir.parent != resolved_root:
+        raise RuntimeError(f"삭제 경로가 올바르지 않습니다: {resolved_dir}")
+
+    shutil.rmtree(resolved_dir)
+    return True
+
+
 def run_command(command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
     completed = subprocess.run(
         command,
@@ -265,18 +303,43 @@ def get_new_vehicle_ids() -> list[str]:
     return sorted(current_ids - head_ids)
 
 
-def ensure_no_removed_allowed_users() -> None:
+def get_removed_vehicle_ids() -> list[str]:
     current_ids = load_allowed_user_ids_from_json_file()
     head_ids = read_head_allowed_user_ids()
-    removed_ids = sorted(head_ids - current_ids)
-    if removed_ids:
+    return sorted(head_ids - current_ids)
+
+
+def ensure_only_expected_removed_allowed_users(expected_removed_ids: set[str]) -> list[str]:
+    removed_ids = get_removed_vehicle_ids()
+    unexpected_removed_ids = sorted(set(removed_ids) - expected_removed_ids)
+    if unexpected_removed_ids:
         raise RuntimeError(
             "기존 허용 차량번호가 빠져 배포가 중단되었습니다.\n"
-            + "\n".join(f"- {vehicle_id}" for vehicle_id in removed_ids)
+            + "\n".join(f"- {vehicle_id}" for vehicle_id in unexpected_removed_ids)
+        )
+    return removed_ids
+
+
+def ensure_removed_vehicle_data_deleted(removed_vehicle_ids: list[str]) -> None:
+    remaining_dirs = [
+        vehicle_id
+        for vehicle_id in removed_vehicle_ids
+        if (USER_ROOT / vehicle_id).exists()
+    ]
+    if remaining_dirs:
+        raise RuntimeError(
+            "삭제 대상 차량의 데이터 폴더가 아직 남아 있어 배포가 중단되었습니다.\n"
+            + "\n".join(
+                f"- public/repository-data/users/{vehicle_id}"
+                for vehicle_id in remaining_dirs
+            )
         )
 
 
-def collect_safe_new_user_paths(new_vehicle_ids: set[str]) -> list[str]:
+def collect_safe_user_paths(
+    new_vehicle_ids: set[str],
+    removed_vehicle_ids: set[str],
+) -> list[str]:
     completed = run_command(
         ["git", "status", "--porcelain", "--", "public/repository-data/users"],
         check=False,
@@ -300,13 +363,16 @@ def collect_safe_new_user_paths(new_vehicle_ids: set[str]) -> list[str]:
         if status == "??" and vehicle_id in new_vehicle_ids:
             allowed_paths.add(f"public/repository-data/users/{vehicle_id}")
             continue
+        if "D" in status and vehicle_id in removed_vehicle_ids:
+            allowed_paths.add(f"public/repository-data/users/{vehicle_id}")
+            continue
 
         violations.append(line)
 
     if violations:
         raise RuntimeError(
             "기존 차량 데이터 변경이 감지되어 배포를 중단했습니다.\n"
-            "관리 프로그램은 새 차량 폴더 추가만 허용합니다.\n\n"
+            "관리 프로그램은 새 차량 추가와 선택한 차량 삭제만 허용합니다.\n\n"
             + "\n".join(violations)
         )
 
@@ -314,9 +380,17 @@ def collect_safe_new_user_paths(new_vehicle_ids: set[str]) -> list[str]:
 
 
 def stage_changes(stage_paths: list[str]) -> None:
-    run_command(["git", "add", "public/data/allowed_users.json", "public/data/allowed_users.meta.json"])
+    run_command(
+        [
+            "git",
+            "add",
+            "-A",
+            "public/data/allowed_users.json",
+            "public/data/allowed_users.meta.json",
+        ]
+    )
     for path in stage_paths:
-        run_command(["git", "add", path])
+        run_command(["git", "add", "-A", path])
 
 
 def has_staged_changes() -> bool:
@@ -328,15 +402,25 @@ def get_head_commit() -> str:
     return run_command(["git", "rev-parse", "HEAD"]).stdout.strip()
 
 
-def commit_and_push(new_vehicle_ids: list[str]) -> str:
+def commit_and_push(
+    new_vehicle_ids: list[str],
+    removed_vehicle_ids: list[str],
+) -> str:
     if not has_staged_changes():
         return get_head_commit()
 
-    commit_message = (
-        f"feat: register vehicle {', '.join(new_vehicle_ids)}"
-        if new_vehicle_ids
-        else "chore: refresh allowed users"
-    )
+    if new_vehicle_ids and removed_vehicle_ids:
+        commit_message = (
+            "chore: sync vehicles "
+            f"(+{', '.join(new_vehicle_ids)} / -{', '.join(removed_vehicle_ids)})"
+        )
+    elif new_vehicle_ids:
+        commit_message = f"feat: register vehicle {', '.join(new_vehicle_ids)}"
+    elif removed_vehicle_ids:
+        commit_message = f"feat: delete vehicle {', '.join(removed_vehicle_ids)}"
+    else:
+        commit_message = "chore: refresh allowed users"
+
     run_command(["git", "commit", "-m", commit_message])
     run_command(["git", "push", "origin", "main"])
     return get_head_commit()
@@ -413,6 +497,7 @@ class CarDiaryAdminApp:
 
         self.refresh_button: ttk.Button | None = None
         self.add_button: ttk.Button | None = None
+        self.delete_button: ttk.Button | None = None
         self.deploy_button: ttk.Button | None = None
         self.tree: ttk.Treeview | None = None
         self.log_text: tk.Text | None = None
@@ -499,6 +584,14 @@ class CarDiaryAdminApp:
         )
         self.add_button.pack(fill="x", pady=(10, 0))
 
+        self.delete_button = ttk.Button(
+            right,
+            text="선택 차량번호 삭제",
+            style="Accent.TButton",
+            command=self.delete_vehicle,
+        )
+        self.delete_button.pack(fill="x", pady=(8, 0))
+
         self.deploy_button = ttk.Button(
             right,
             text="빌드 + GitHub Pages 배포",
@@ -510,9 +603,10 @@ class CarDiaryAdminApp:
         guard_frame = ttk.LabelFrame(right, text="안전장치", padding=12)
         guard_frame.pack(fill="x", pady=(16, 0))
         for text in (
-            "기존 차량 데이터 수정/삭제가 감지되면 배포를 중단합니다.",
+            "선택한 차량 삭제만 허용하며, 삭제 시 해당 차량의 모든 기록 폴더도 함께 제거합니다.",
+            "선택하지 않은 다른 차량 데이터 수정/삭제가 감지되면 배포를 중단합니다.",
             "새 차량은 public/repository-data/users/{vehicleId} 아래에만 생성합니다.",
-            "기존 허용 차량번호가 빠지면 배포를 중단합니다.",
+            "허용 목록에서 빠진 차량은 실제 폴더 삭제까지 확인되어야만 배포됩니다.",
         ):
             ttk.Label(guard_frame, text=f"• {text}", style="Muted.TLabel").pack(anchor="w", pady=2)
 
@@ -543,7 +637,12 @@ class CarDiaryAdminApp:
 
     def _set_busy(self, is_busy: bool) -> None:
         state = "disabled" if is_busy else "normal"
-        for button in (self.refresh_button, self.add_button, self.deploy_button):
+        for button in (
+            self.refresh_button,
+            self.add_button,
+            self.delete_button,
+            self.deploy_button,
+        ):
             if button is not None:
                 button.configure(state=state)
 
@@ -605,6 +704,18 @@ class CarDiaryAdminApp:
 
         self.status_text.set(f"{len(rows)}대 등록됨")
 
+    def get_selected_vehicle_id(self) -> str | None:
+        assert self.tree is not None
+        selected_items = self.tree.selection()
+        if not selected_items:
+            return None
+
+        values = self.tree.item(selected_items[0], "values")
+        if not values:
+            return None
+
+        return str(values[0]).strip()
+
     def add_vehicle(self) -> None:
         vehicle_id = self.vehicle_input.get().strip()
         validation_error = validate_vehicle_id(vehicle_id)
@@ -635,6 +746,41 @@ class CarDiaryAdminApp:
         self.vehicle_input.set("")
         self._run_background("차량번호 등록 중...", worker)
 
+    def delete_vehicle(self) -> None:
+        vehicle_id = self.get_selected_vehicle_id()
+        if not vehicle_id:
+            messagebox.showwarning("선택 확인", "삭제할 차량번호를 목록에서 먼저 선택하세요.")
+            return
+
+        def worker() -> str:
+            self.log(f"[run] 차량번호 삭제 시작: {vehicle_id}")
+            removed = remove_vehicle_id(vehicle_id)
+            if removed:
+                self.log(f"[info] allowed_vehicle_ids.txt 에서 {vehicle_id} 제거")
+            else:
+                self.log(f"[info] {vehicle_id} 는 허용 목록에 없어 제거할 항목이 없음")
+
+            deleted_bundle = delete_user_bundle(vehicle_id)
+            if deleted_bundle:
+                self.log(
+                    f"[info] 차량 데이터 폴더 삭제: public/repository-data/users/{vehicle_id}"
+                )
+            else:
+                self.log(
+                    f"[info] 삭제할 차량 데이터 폴더가 없음: public/repository-data/users/{vehicle_id}"
+                )
+
+            build_output = run_build_allowed_users()
+            if build_output:
+                self.log(build_output)
+
+            return (
+                f"[done] 차량번호 삭제 완료: {vehicle_id}\n"
+                "[info] GitHub 반영은 빌드 + GitHub Pages 배포 버튼으로 진행됩니다."
+            )
+
+        self._run_background("차량번호 삭제 중...", worker)
+
     def deploy_changes(self) -> None:
         if not messagebox.askyesno(
             "배포 확인",
@@ -648,19 +794,29 @@ class CarDiaryAdminApp:
             if build_output:
                 self.log(build_output)
 
-            ensure_no_removed_allowed_users()
             new_vehicle_ids = get_new_vehicle_ids()
+            removed_vehicle_ids = ensure_only_expected_removed_allowed_users(
+                set(get_removed_vehicle_ids())
+            )
+            ensure_removed_vehicle_data_deleted(removed_vehicle_ids)
             self.log(
                 "[info] 새 차량: "
                 + (", ".join(new_vehicle_ids) if new_vehicle_ids else "없음")
             )
+            self.log(
+                "[info] 삭제 차량: "
+                + (", ".join(removed_vehicle_ids) if removed_vehicle_ids else "없음")
+            )
 
-            stage_paths = collect_safe_new_user_paths(set(new_vehicle_ids))
+            stage_paths = collect_safe_user_paths(
+                set(new_vehicle_ids),
+                set(removed_vehicle_ids),
+            )
             stage_changes(stage_paths)
             if not has_staged_changes():
                 return "[done] 배포할 변경 사항이 없습니다."
 
-            commit_sha = commit_and_push(new_vehicle_ids)
+            commit_sha = commit_and_push(new_vehicle_ids, removed_vehicle_ids)
 
             self.log(f"[info] push 완료: {commit_sha}")
             self.log("[run] GitHub Pages 배포 확인")
