@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960">
-  <rect width="1280" height="960" fill="#0a1018"/>
-  <rect x="120" y="130" width="1040" height="700" rx="44" fill="#172131" stroke="#f4ba53" stroke-width="4"/>
-  <rect x="470" y="220" width="340" height="430" rx="46" fill="#1f2c3f"/>
-  <rect x="540" y="180" width="200" height="80" rx="26" fill="#334861"/>
-  <path d="M580 340h120c35 0 64 29 64 64v90c0 35-29 64-64 64H580c-35 0-64-29-64-64v-90c0-35 29-64 64-64Z" fill="#f4ba53"/>
-  <text x="150" y="190" fill="#edf4ff" font-size="48" font-family="Arial">Engine Oil Service</text>
-  <text x="150" y="245" fill="#9ba7ba" font-size="28" font-family="Arial">Oil + oil filter + air filter</text>
-</svg>
