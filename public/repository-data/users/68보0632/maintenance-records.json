@@ -2,65 +2,6 @@
   "vehicleId": "68보0632",
   "records": [
     {
-      "id": "record_brakes_20260215",
-      "date": "2026-02-15",
-      "odometerKm": 81230,
-      "items": [
-        {
-          "code": "brakes:프론트 브레이크패드 교환",
-          "categoryKey": "brakes",
-          "label": "프론트 브레이크패드 교환",
-          "isCustom": false
-        },
-        {
-          "code": "engine-oil:브레이크오일 교환",
-          "categoryKey": "engine-oil",
-          "label": "브레이크오일 교환",
-          "isCustom": false
-        }
-      ],
-      "customItemsText": "",
-      "shopName": "동탄 브레이크랩",
-      "partsCost": 206000,
-      "laborCost": 80000,
-      "totalCost": 286000,
-      "notes": "브레이크 페달 답력이 무른 느낌이 있어 패드와 브레이크오일을 함께 정비.",
-      "photos": [
-        {
-          "id": "photo_brake_01",
-          "kind": "photo",
-          "fileName": "brake-service.svg",
-          "originalFileName": "brake-service.svg",
-          "contentType": "image/svg+xml",
-          "bytes": 1842,
-          "width": 1280,
-          "height": 960,
-          "optimized": true,
-          "uploadedAt": "2026-02-15T08:10:00.000Z",
-          "path": "public/repository-data/users/68보0632/photos/brake-service.svg"
-        }
-      ],
-      "receiptPhotos": [
-        {
-          "id": "receipt_brake_01",
-          "kind": "receipt",
-          "fileName": "receipt-brake.svg",
-          "originalFileName": "receipt-brake.svg",
-          "contentType": "image/svg+xml",
-          "bytes": 1128,
-          "width": 900,
-          "height": 1200,
-          "optimized": true,
-          "uploadedAt": "2026-02-15T08:20:00.000Z",
-          "path": "public/repository-data/users/68보0632/receipts/receipt-brake.svg"
-        }
-      ],
-      "representativePhotoId": "photo_brake_01",
-      "scheduledSourceId": null,
-      "createdAt": "2026-02-15T08:10:00.000Z",
-      "updatedAt": "2026-02-15T08:20:00.000Z"
-    },
-    {
       "id": "record_oil_20260106",
       "date": "2026-01-06",
       "odometerKm": 80320,
@@ -151,5 +92,5 @@
       "updatedAt": "2025-12-04T04:20:00.000Z"
     }
   ],
-  "updatedAt": "2026-04-04T05:01:06.712Z"
+  "updatedAt": "2026-04-04T05:01:11.992Z"
 }
