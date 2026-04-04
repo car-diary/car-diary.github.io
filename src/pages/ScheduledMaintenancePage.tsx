@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../constants/app'
 import { MAINTENANCE_CATEGORIES } from '../constants/maintenanceItems'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import { persistMaintenanceRecordDraft } from '../features/maintenanceRecords'
 import {
   readVehicleScopedDraft,
@@ -25,6 +25,7 @@ import {
 } from '../components/ui'
 
 const today = () => new Date().toISOString().slice(0, 10)
+const EMPTY_SCHEDULES = [] as const
 
 const createEmptyDraft = (vehicleId: string): ScheduledMaintenanceDraft => ({
   vehicleId,
@@ -54,17 +55,36 @@ const buildDraftFromSchedule = (
   notes: schedule.notes,
 })
 
-export const ScheduledMaintenancePage = () => {
+interface ScheduledMaintenanceEditorProps {
+  vehicleId: string
+  currentOdometerKm: number
+  schedules: ScheduledMaintenance[]
+  isReadOnly: boolean
+  saveScheduledMaintenance: (draft: ScheduledMaintenanceDraft) => Promise<void>
+  deleteScheduledMaintenance: (scheduleId: string) => Promise<void>
+  markScheduleCompleted: (scheduleId: string, recordId: string) => Promise<void>
+}
+
+const ScheduledMaintenanceEditor = ({
+  vehicleId,
+  currentOdometerKm,
+  schedules,
+  isReadOnly,
+  saveScheduledMaintenance,
+  deleteScheduledMaintenance,
+  markScheduleCompleted,
+}: ScheduledMaintenanceEditorProps) => {
   const navigate = useNavigate()
-  const {
-    userBundle,
-    saveScheduledMaintenance,
-    deleteScheduledMaintenance,
-    markScheduleCompleted,
-    isReadOnly,
-  } = useApp()
-  const vehicleId = userBundle?.profile.vehicleId ?? ''
-  const [draft, setDraft] = useState<ScheduledMaintenanceDraft>(createEmptyDraft(''))
+  const [draft, setDraft] = useState<ScheduledMaintenanceDraft>(() =>
+    ({
+      ...createEmptyDraft(vehicleId),
+      ...readVehicleScopedDraft<ScheduledMaintenanceDraft>(
+        LOCAL_STORAGE_KEYS.scheduleDraft,
+        vehicleId,
+      ),
+      vehicleId,
+    }),
+  )
   const [statusFilter, setStatusFilter] = useState<'pending' | 'completed' | 'all'>(
     'pending',
   )
@@ -72,25 +92,8 @@ export const ScheduledMaintenancePage = () => {
   const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!vehicleId) return
-
-    setDraft({
-      ...createEmptyDraft(vehicleId),
-      ...readVehicleScopedDraft<ScheduledMaintenanceDraft>(
-        LOCAL_STORAGE_KEYS.scheduleDraft,
-        vehicleId,
-      ),
-      vehicleId,
-    })
-  }, [vehicleId])
-
-  useEffect(() => {
-    if (!draft.vehicleId) return
     writeVehicleScopedDraft(LOCAL_STORAGE_KEYS.scheduleDraft, draft.vehicleId, draft)
   }, [draft])
-
-  const schedules = userBundle?.scheduledMaintenance.items ?? []
-  const currentOdometerKm = userBundle?.profile.currentOdometerKm ?? 0
 
   const filteredSchedules = useMemo(
     () =>
@@ -100,12 +103,8 @@ export const ScheduledMaintenancePage = () => {
     [schedules, statusFilter],
   )
 
-  if (!userBundle) {
-    return null
-  }
-
   const resetDraft = () => {
-    const next = createEmptyDraft(userBundle.profile.vehicleId)
+    const next = createEmptyDraft(vehicleId)
     setDraft(next)
     setFormError(null)
     writeVehicleScopedDraft(LOCAL_STORAGE_KEYS.scheduleDraft, next.vehicleId, next)
@@ -114,11 +113,11 @@ export const ScheduledMaintenancePage = () => {
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!draft.title.trim() && draft.selectedItemCodes.length === 0) {
-      setFormError('정비명 또는 정비항목을 입력하세요.')
+      setFormError('정비명 또는 정비 항목을 입력하세요.')
       return
     }
     if (!draft.scheduledDate && !draft.targetOdometerKm) {
-      setFormError('예정일 또는 목표주행거리 중 하나는 입력해야 합니다.')
+      setFormError('예정일 또는 목표주행거리를 하나 이상 입력해야 합니다.')
       return
     }
     try {
@@ -183,7 +182,7 @@ export const ScheduledMaintenancePage = () => {
             </Field>
 
             <div className="rounded-3xl border border-border bg-panelAlt p-4">
-              <p className="text-sm font-semibold text-text">정비항목 선택</p>
+              <p className="text-sm font-semibold text-text">정비 항목 선택</p>
               <div className="mt-4 space-y-4">
                 {MAINTENANCE_CATEGORIES.map((category) => (
                   <div key={category.key}>
@@ -287,7 +286,7 @@ export const ScheduledMaintenancePage = () => {
                 {draft.id ? '정비예정 수정' : '정비예정 저장'}
               </Button>
               <Button type="button" variant="secondary" onClick={resetDraft} className="flex-1">
-                폼 초기화
+                입력 초기화
               </Button>
             </div>
           </form>
@@ -314,7 +313,7 @@ export const ScheduledMaintenancePage = () => {
             {filteredSchedules.length === 0 ? (
               <EmptyState
                 title="등록된 정비예정이 없습니다."
-                description="정비예정을 추가하세요."
+                description="정비예정을 추가해 두세요."
               />
             ) : (
               filteredSchedules.map((schedule) => (
@@ -357,7 +356,7 @@ export const ScheduledMaintenancePage = () => {
                       <Button
                         variant="secondary"
                         onClick={() => {
-                          setDraft(buildDraftFromSchedule(userBundle.profile.vehicleId, schedule))
+                          setDraft(buildDraftFromSchedule(vehicleId, schedule))
                           window.scrollTo({ top: 0, behavior: 'smooth' })
                         }}
                       >
@@ -368,7 +367,7 @@ export const ScheduledMaintenancePage = () => {
                           <Button
                             onClick={() => {
                               const draftRecord = {
-                                vehicleId: userBundle.profile.vehicleId,
+                                vehicleId,
                                 date: today(),
                                 odometerKm: currentOdometerKm,
                                 selectedItemCodes: schedule.items.map((item) => item.code),
@@ -443,5 +442,32 @@ export const ScheduledMaintenancePage = () => {
         </div>
       </Modal>
     </div>
+  )
+}
+
+export const ScheduledMaintenancePage = () => {
+  const {
+    userBundle,
+    saveScheduledMaintenance,
+    deleteScheduledMaintenance,
+    markScheduleCompleted,
+    isReadOnly,
+  } = useApp()
+
+  if (!userBundle) {
+    return null
+  }
+
+  return (
+    <ScheduledMaintenanceEditor
+      key={userBundle.profile.vehicleId}
+      vehicleId={userBundle.profile.vehicleId}
+      currentOdometerKm={userBundle.profile.currentOdometerKm}
+      schedules={userBundle.scheduledMaintenance.items ?? EMPTY_SCHEDULES}
+      isReadOnly={isReadOnly}
+      saveScheduledMaintenance={saveScheduledMaintenance}
+      deleteScheduledMaintenance={deleteScheduledMaintenance}
+      markScheduleCompleted={markScheduleCompleted}
+    />
   )
 }

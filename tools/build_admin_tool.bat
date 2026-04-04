@@ -1,6 +1,7 @@
 @echo off
 setlocal
 chcp 65001 >nul
+set PYTHONUTF8=1
 
 tasklist /FI "IMAGENAME eq CarDiaryAdmin.exe" 2>nul | find /I "CarDiaryAdmin.exe" >nul
 if not errorlevel 1 (

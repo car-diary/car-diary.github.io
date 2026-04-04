@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +19,11 @@ SAMPLE_SOURCE = """# allowed vehicle ids
 123가4567
 45나8888
 """
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 
 
 @dataclass

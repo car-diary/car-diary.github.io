@@ -12,7 +12,7 @@ import {
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '../../constants/app'
-import { useApp } from '../../context/AppContext'
+import { useApp } from '../../context/appContextStore'
 import { cn } from '../../lib/utils'
 import { Button, Card, IconButton, LoadingOverlay } from '../ui'
 

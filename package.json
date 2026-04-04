@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:allowed": "python tools/build_allowed_users.py",
+    "build:allowed": "python -X utf8 tools/build_allowed_users.py",
     "build": "npm run build:allowed && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

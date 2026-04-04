@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Button, Card, Field, Input } from '../components/ui'
 import { ROUTES } from '../constants/app'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import { validateVehicleId } from '../lib/validation'
 
 export const LoginPage = () => {

@@ -54,6 +54,11 @@ VEHICLE_ID_PATTERN = re.compile(r"^\d{2,3}[\uAC00-\uD7A3]\d{4}$")
 UTF8 = "utf-8"
 NO_WINDOW = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding=UTF8)
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding=UTF8)
+
 
 @dataclass
 class VehicleRow:

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import { downloadTextFile } from '../lib/utils'
 import { Button, Card, EmptyState, SectionTitle } from '../components/ui'
 

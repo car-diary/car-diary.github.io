@@ -19,7 +19,7 @@ import {
   SectionTitle,
 } from '../components/ui'
 import { ROUTES } from '../constants/app'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import {
   formatBytes,
   formatCurrency,

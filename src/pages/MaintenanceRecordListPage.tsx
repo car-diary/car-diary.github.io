@@ -15,7 +15,7 @@ import {
 } from '../components/ui'
 import { ROUTES } from '../constants/app'
 import { MAINTENANCE_CATEGORIES } from '../constants/maintenanceItems'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import {
   buildMaintenanceRecordDraftFromRecord,
   getMaintenancePhotoCaption,
@@ -24,6 +24,8 @@ import {
 import { formatCurrency, formatKilometers, formatShortDate } from '../lib/format'
 import { getAttachmentUrl } from '../services/carDiaryRepository'
 import type { RecordSortKey } from '../types/models'
+
+const EMPTY_RECORDS = [] as const
 
 export const MaintenanceRecordListPage = () => {
   const navigate = useNavigate()
@@ -37,7 +39,7 @@ export const MaintenanceRecordListPage = () => {
   const [sortKey, setSortKey] = useState<RecordSortKey>('date')
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
-  const records = userBundle?.maintenanceRecords.records ?? []
+  const records = userBundle?.maintenanceRecords.records ?? EMPTY_RECORDS
 
   const filteredRecords = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()

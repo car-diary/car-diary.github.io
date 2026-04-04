@@ -1,7 +1,7 @@
 import { MoonStar, SunMedium } from 'lucide-react'
 
 import { Card, ProgressBar } from '../components/ui'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import { formatBytes } from '../lib/format'
 
 export const SettingsPage = () => {

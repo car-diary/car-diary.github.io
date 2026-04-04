@@ -4,7 +4,8 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { ToastViewport } from './components/ui'
 import { ROUTES } from './constants/app'
-import { AppProvider, useApp } from './context/AppContext'
+import { AppProvider } from './context/AppContext'
+import { useApp } from './context/appContextStore'
 
 const BackupsPage = lazy(() =>
   import('./pages/BackupsPage').then((module) => ({

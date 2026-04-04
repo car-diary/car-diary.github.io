@@ -1,6 +1,5 @@
 import {
-  createContext,
-  useContext,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -29,7 +28,6 @@ import type {
   AllowedUserPublicEntry,
   AppSettings,
   AttachmentPhoto,
-  DashboardSummary,
   ImportPayload,
   MaintenanceRecord,
   MaintenanceRecordDraft,
@@ -39,40 +37,10 @@ import type {
   ScheduledMaintenance,
   ScheduledMaintenanceDraft,
   SessionState,
-  StatisticsSnapshot,
   ToastMessage,
   UserBundle,
 } from '../types/models'
-
-interface AppContextValue {
-  settings: AppSettings
-  session: SessionState | null
-  allowedUsers: AllowedUserPublicEntry[]
-  userBundle: UserBundle | null
-  dashboardSummary: DashboardSummary | null
-  statistics: StatisticsSnapshot | null
-  isBootstrapping: boolean
-  isSaving: boolean
-  isReadOnly: boolean
-  toasts: ToastMessage[]
-  saveSettings: (nextSettings: Partial<AppSettings>) => void
-  refreshAllowedUsers: () => Promise<void>
-  login: (vehicleId: string) => Promise<void>
-  logout: () => void
-  pushToast: (toast: Omit<ToastMessage, 'id'>) => void
-  dismissToast: (toastId: string) => void
-  updateOdometer: (input: OdometerUpdateInput) => Promise<void>
-  saveMaintenanceRecord: (draft: MaintenanceRecordDraft) => Promise<void>
-  deleteMaintenanceRecord: (recordId: string) => Promise<void>
-  saveScheduledMaintenance: (draft: ScheduledMaintenanceDraft) => Promise<void>
-  deleteScheduledMaintenance: (scheduleId: string) => Promise<void>
-  markScheduleCompleted: (scheduleId: string, recordId: string) => Promise<void>
-  importData: (payload: ImportPayload) => Promise<void>
-  exportData: () => ImportPayload | null
-  testGitHubConnection: () => Promise<void>
-}
-
-const AppContext = createContext<AppContextValue | null>(null)
+import { AppContext, type AppContextValue } from './appContextStore'
 
 const persistSettings = (settings: AppSettings) => {
   localStorage.setItem(LOCAL_STORAGE_KEYS.appSettings, JSON.stringify(settings))
@@ -189,18 +157,18 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
 
   const isReadOnly = !settings.token
 
-  const pushToast = (toast: Omit<ToastMessage, 'id'>) => {
+  const pushToast = useCallback((toast: Omit<ToastMessage, 'id'>) => {
     const id = createId('toast')
     setToasts((current) => [...current, { ...toast, id }])
     const timeoutId = window.setTimeout(() => {
       setToasts((current) => current.filter((item) => item.id !== id))
     }, 4200)
     toastTimeouts.current.push(timeoutId)
-  }
+  }, [])
 
-  const dismissToast = (toastId: string) => {
+  const dismissToast = useCallback((toastId: string) => {
     setToasts((current) => current.filter((toast) => toast.id !== toastId))
-  }
+  }, [])
 
   const refreshAllowedUsers = async () => {
     const entries = await readAllowedUsers(settings)
@@ -261,16 +229,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     return () => {
       cancelled = true
     }
-  }, [
-    settings.allowedUsersPath,
-    settings.branch,
-    settings.dataRootPath,
-    settings.preferLocalPublicFiles,
-    settings.repoName,
-    settings.repoOwner,
-    settings.token,
-    session?.vehicleId,
-  ])
+  }, [pushToast, session?.vehicleId, settings])
 
   const saveSettings = (nextSettings: Partial<AppSettings>) => {
     setSettings((current) => {
@@ -921,55 +880,33 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     [userBundle],
   )
 
-  const value = useMemo<AppContextValue>(
-    () => ({
-      settings,
-      session,
-      allowedUsers,
-      userBundle,
-      dashboardSummary,
-      statistics,
-      isBootstrapping,
-      isSaving,
-      isReadOnly,
-      toasts,
-      saveSettings,
-      refreshAllowedUsers,
-      login,
-      logout,
-      pushToast,
-      dismissToast,
-      updateOdometer,
-      saveMaintenanceRecord,
-      deleteMaintenanceRecord,
-      saveScheduledMaintenance,
-      deleteScheduledMaintenance,
-      markScheduleCompleted,
-      importData,
-      exportData,
-      testGitHubConnection,
-    }),
-    [
-      settings,
-      session,
-      allowedUsers,
-      userBundle,
-      dashboardSummary,
-      statistics,
-      isBootstrapping,
-      isSaving,
-      isReadOnly,
-      toasts,
-    ],
-  )
+  const value: AppContextValue = {
+    settings,
+    session,
+    allowedUsers,
+    userBundle,
+    dashboardSummary,
+    statistics,
+    isBootstrapping,
+    isSaving,
+    isReadOnly,
+    toasts,
+    saveSettings,
+    refreshAllowedUsers,
+    login,
+    logout,
+    pushToast,
+    dismissToast,
+    updateOdometer,
+    saveMaintenanceRecord,
+    deleteMaintenanceRecord,
+    saveScheduledMaintenance,
+    deleteScheduledMaintenance,
+    markScheduleCompleted,
+    importData,
+    exportData,
+    testGitHubConnection,
+  }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
-}
-
-export const useApp = () => {
-  const context = useContext(AppContext)
-  if (!context) {
-    throw new Error('AppContext가 초기화되지 않았습니다.')
-  }
-  return context
 }

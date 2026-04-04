@@ -12,7 +12,7 @@ import {
 } from '../components/ui'
 import { ROUTES } from '../constants/app'
 import { MAINTENANCE_CATEGORIES } from '../constants/maintenanceItems'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import {
   clearMaintenanceRecordDraft,
   persistMaintenanceRecordDraft,
@@ -26,42 +26,37 @@ const parseNumberInput = (value: string) => {
   return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : 0
 }
 
-export const MaintenanceRecordsPage = () => {
+interface MaintenanceRecordEditorProps {
+  vehicleId: string
+  currentOdometerKm: number
+  isReadOnly: boolean
+  saveMaintenanceRecord: (draft: MaintenanceRecordDraft) => Promise<void>
+}
+
+const MaintenanceRecordEditor = ({
+  vehicleId,
+  currentOdometerKm,
+  isReadOnly,
+  saveMaintenanceRecord,
+}: MaintenanceRecordEditorProps) => {
   const navigate = useNavigate()
-  const { userBundle, saveMaintenanceRecord, isReadOnly } = useApp()
-  const [draft, setDraft] = useState<MaintenanceRecordDraft | null>(null)
+  const [draft, setDraft] = useState<MaintenanceRecordDraft>(() =>
+    readMaintenanceRecordDraft(vehicleId, currentOdometerKm),
+  )
   const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!userBundle) return
-    setDraft(
-      readMaintenanceRecordDraft(
-        userBundle.profile.vehicleId,
-        userBundle.profile.currentOdometerKm,
-      ),
-    )
-  }, [userBundle])
-
-  useEffect(() => {
-    if (!draft) return
     persistMaintenanceRecordDraft(draft)
   }, [draft])
 
-  if (!userBundle || !draft) {
-    return null
-  }
-
   const resetDraft = () => {
-    const nextDraft = clearMaintenanceRecordDraft(
-      userBundle.profile.vehicleId,
-      userBundle.profile.currentOdometerKm,
-    )
+    const nextDraft = clearMaintenanceRecordDraft(vehicleId, currentOdometerKm)
     setDraft(nextDraft)
     setFormError(null)
   }
 
   const updateDraft = (updater: (current: MaintenanceRecordDraft) => MaintenanceRecordDraft) => {
-    setDraft((current) => (current ? updater(current) : current))
+    setDraft((current) => updater(current))
   }
 
   const handleCostChange = (field: 'partsCost' | 'laborCost', rawValue: string) => {
@@ -97,7 +92,7 @@ export const MaintenanceRecordsPage = () => {
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (draft.selectedItemCodes.length === 0) {
-      setFormError('정비항목을 하나 이상 선택하세요.')
+      setFormError('정비 항목을 하나 이상 선택하세요.')
       return
     }
 
@@ -121,7 +116,7 @@ export const MaintenanceRecordsPage = () => {
               {draft.id ? '정비내역 수정' : '정비내역 등록'}
             </h1>
             <p className="mt-3 text-sm text-muted">
-              현재 주행거리 {formatKilometers(userBundle.profile.currentOdometerKm)}
+              현재 주행거리 {formatKilometers(currentOdometerKm)}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -202,7 +197,7 @@ export const MaintenanceRecordsPage = () => {
           </div>
 
           <div className="rounded-3xl border border-border bg-panelAlt p-4">
-            <p className="text-sm font-semibold text-text">정비항목</p>
+            <p className="text-sm font-semibold text-text">정비 항목</p>
             <div className="mt-4 space-y-4">
               {MAINTENANCE_CATEGORIES.map((category) => (
                 <div key={category.key}>
@@ -314,9 +309,26 @@ export const MaintenanceRecordsPage = () => {
               입력 초기화
             </Button>
           </div>
-
         </form>
       </Card>
     </div>
+  )
+}
+
+export const MaintenanceRecordsPage = () => {
+  const { userBundle, saveMaintenanceRecord, isReadOnly } = useApp()
+
+  if (!userBundle) {
+    return null
+  }
+
+  return (
+    <MaintenanceRecordEditor
+      key={userBundle.profile.vehicleId}
+      vehicleId={userBundle.profile.vehicleId}
+      currentOdometerKm={userBundle.profile.currentOdometerKm}
+      isReadOnly={isReadOnly}
+      saveMaintenanceRecord={saveMaintenanceRecord}
+    />
   )
 }

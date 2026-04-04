@@ -13,7 +13,7 @@ import {
   YAxis,
 } from 'recharts'
 
-import { useApp } from '../context/AppContext'
+import { useApp } from '../context/appContextStore'
 import { formatCurrency, formatKilometers, formatShortDate } from '../lib/format'
 import { Card, EmptyState, SectionTitle } from '../components/ui'
 
