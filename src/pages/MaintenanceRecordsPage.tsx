@@ -34,7 +34,12 @@ export const MaintenanceRecordsPage = () => {
 
   useEffect(() => {
     if (!userBundle) return
-    setDraft(readMaintenanceRecordDraft(userBundle.profile.currentOdometerKm))
+    setDraft(
+      readMaintenanceRecordDraft(
+        userBundle.profile.vehicleId,
+        userBundle.profile.currentOdometerKm,
+      ),
+    )
   }, [userBundle])
 
   useEffect(() => {
@@ -47,7 +52,10 @@ export const MaintenanceRecordsPage = () => {
   }
 
   const resetDraft = () => {
-    const nextDraft = clearMaintenanceRecordDraft(userBundle.profile.currentOdometerKm)
+    const nextDraft = clearMaintenanceRecordDraft(
+      userBundle.profile.vehicleId,
+      userBundle.profile.currentOdometerKm,
+    )
     setDraft(nextDraft)
     setFormError(null)
   }

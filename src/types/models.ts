@@ -218,6 +218,7 @@ export interface ToastMessage {
 
 export interface MaintenanceRecordDraft {
   id?: string
+  vehicleId: string
   date: string
   odometerKm: number
   selectedItemCodes: string[]
@@ -237,6 +238,7 @@ export interface MaintenanceRecordDraft {
 
 export interface ScheduledMaintenanceDraft {
   id?: string
+  vehicleId: string
   title: string
   selectedItemCodes: string[]
   scheduledDate: string

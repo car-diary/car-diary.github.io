@@ -1,14 +1,19 @@
 import { LOCAL_STORAGE_KEYS } from '../constants/app'
 import { MAINTENANCE_ITEM_LOOKUP } from '../constants/maintenanceItems'
-import { safeJsonParse } from '../lib/utils'
+import {
+  readVehicleScopedDraft,
+  writeVehicleScopedDraft,
+} from '../lib/draftStorage'
 import { calculateTotalCost } from '../lib/validation'
 import type { MaintenanceRecord, MaintenanceRecordDraft } from '../types/models'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
 export const createEmptyMaintenanceRecordDraft = (
+  vehicleId: string,
   currentOdometerKm: number,
 ): MaintenanceRecordDraft => ({
+  vehicleId,
   date: today(),
   odometerKm: currentOdometerKm,
   selectedItemCodes: [],
@@ -27,9 +32,11 @@ export const createEmptyMaintenanceRecordDraft = (
 })
 
 export const buildMaintenanceRecordDraftFromRecord = (
+  vehicleId: string,
   record: MaintenanceRecord,
 ): MaintenanceRecordDraft => ({
   id: record.id,
+  vehicleId,
   date: record.date,
   odometerKm: record.odometerKm,
   selectedItemCodes: record.items.map((item) => item.code),
@@ -53,18 +60,19 @@ export const serializeMaintenanceRecordDraft = (draft: MaintenanceRecordDraft) =
   newReceipts: [],
 })
 
-export const readMaintenanceRecordDraft = (currentOdometerKm: number) => {
-  const baseDraft = createEmptyMaintenanceRecordDraft(currentOdometerKm)
-  const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.recordDraft)
-
-  if (!raw) {
-    return baseDraft
-  }
-
-  const stored = safeJsonParse<Partial<MaintenanceRecordDraft>>(raw, {})
+export const readMaintenanceRecordDraft = (
+  vehicleId: string,
+  currentOdometerKm: number,
+) => {
+  const baseDraft = createEmptyMaintenanceRecordDraft(vehicleId, currentOdometerKm)
+  const stored = readVehicleScopedDraft<MaintenanceRecordDraft>(
+    LOCAL_STORAGE_KEYS.recordDraft,
+    vehicleId,
+  )
   const nextDraft: MaintenanceRecordDraft = {
     ...baseDraft,
     ...stored,
+    vehicleId,
     odometerKm: stored.id ? stored.odometerKm ?? baseDraft.odometerKm : currentOdometerKm,
     totalCost:
       typeof stored.totalCost === 'number'
@@ -81,14 +89,18 @@ export const readMaintenanceRecordDraft = (currentOdometerKm: number) => {
 }
 
 export const persistMaintenanceRecordDraft = (draft: MaintenanceRecordDraft) => {
-  localStorage.setItem(
+  writeVehicleScopedDraft(
     LOCAL_STORAGE_KEYS.recordDraft,
-    JSON.stringify(serializeMaintenanceRecordDraft(draft)),
+    draft.vehicleId,
+    serializeMaintenanceRecordDraft(draft),
   )
 }
 
-export const clearMaintenanceRecordDraft = (currentOdometerKm: number) => {
-  const draft = createEmptyMaintenanceRecordDraft(currentOdometerKm)
+export const clearMaintenanceRecordDraft = (
+  vehicleId: string,
+  currentOdometerKm: number,
+) => {
+  const draft = createEmptyMaintenanceRecordDraft(vehicleId, currentOdometerKm)
   persistMaintenanceRecordDraft(draft)
   return draft
 }

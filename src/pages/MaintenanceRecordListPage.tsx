@@ -90,7 +90,10 @@ export const MaintenanceRecordListPage = () => {
     const record = records.find((item) => item.id === recordId)
     if (!record) return
 
-    const nextDraft = buildMaintenanceRecordDraftFromRecord(record)
+    const nextDraft = buildMaintenanceRecordDraftFromRecord(
+      userBundle.profile.vehicleId,
+      record,
+    )
     persistMaintenanceRecordDraft(
       mode === 'edit'
         ? nextDraft

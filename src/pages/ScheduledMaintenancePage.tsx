@@ -6,8 +6,11 @@ import { LOCAL_STORAGE_KEYS, ROUTES } from '../constants/app'
 import { MAINTENANCE_CATEGORIES } from '../constants/maintenanceItems'
 import { useApp } from '../context/AppContext'
 import { persistMaintenanceRecordDraft } from '../features/maintenanceRecords'
+import {
+  readVehicleScopedDraft,
+  writeVehicleScopedDraft,
+} from '../lib/draftStorage'
 import { formatCurrency, formatKilometers, formatShortDate } from '../lib/format'
-import { safeJsonParse } from '../lib/utils'
 import type { ScheduledMaintenance, ScheduledMaintenanceDraft } from '../types/models'
 import {
   Badge,
@@ -23,7 +26,8 @@ import {
 
 const today = () => new Date().toISOString().slice(0, 10)
 
-const createEmptyDraft = (): ScheduledMaintenanceDraft => ({
+const createEmptyDraft = (vehicleId: string): ScheduledMaintenanceDraft => ({
+  vehicleId,
   title: '',
   selectedItemCodes: [],
   scheduledDate: '',
@@ -34,9 +38,11 @@ const createEmptyDraft = (): ScheduledMaintenanceDraft => ({
 })
 
 const buildDraftFromSchedule = (
+  vehicleId: string,
   schedule: ScheduledMaintenance,
 ): ScheduledMaintenanceDraft => ({
   id: schedule.id,
+  vehicleId,
   title: schedule.title,
   selectedItemCodes: schedule.items.map((item) => item.code),
   scheduledDate: schedule.scheduledDate ?? '',
@@ -57,7 +63,8 @@ export const ScheduledMaintenancePage = () => {
     markScheduleCompleted,
     isReadOnly,
   } = useApp()
-  const [draft, setDraft] = useState<ScheduledMaintenanceDraft>(createEmptyDraft)
+  const vehicleId = userBundle?.profile.vehicleId ?? ''
+  const [draft, setDraft] = useState<ScheduledMaintenanceDraft>(createEmptyDraft(''))
   const [statusFilter, setStatusFilter] = useState<'pending' | 'completed' | 'all'>(
     'pending',
   )
@@ -65,17 +72,21 @@ export const ScheduledMaintenancePage = () => {
   const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.scheduleDraft)
-    if (raw) {
-      setDraft({
-        ...createEmptyDraft(),
-        ...safeJsonParse<Partial<ScheduledMaintenanceDraft>>(raw, {}),
-      })
-    }
-  }, [])
+    if (!vehicleId) return
+
+    setDraft({
+      ...createEmptyDraft(vehicleId),
+      ...readVehicleScopedDraft<ScheduledMaintenanceDraft>(
+        LOCAL_STORAGE_KEYS.scheduleDraft,
+        vehicleId,
+      ),
+      vehicleId,
+    })
+  }, [vehicleId])
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.scheduleDraft, JSON.stringify(draft))
+    if (!draft.vehicleId) return
+    writeVehicleScopedDraft(LOCAL_STORAGE_KEYS.scheduleDraft, draft.vehicleId, draft)
   }, [draft])
 
   const schedules = userBundle?.scheduledMaintenance.items ?? []
@@ -94,10 +105,10 @@ export const ScheduledMaintenancePage = () => {
   }
 
   const resetDraft = () => {
-    const next = createEmptyDraft()
+    const next = createEmptyDraft(userBundle.profile.vehicleId)
     setDraft(next)
     setFormError(null)
-    localStorage.setItem(LOCAL_STORAGE_KEYS.scheduleDraft, JSON.stringify(next))
+    writeVehicleScopedDraft(LOCAL_STORAGE_KEYS.scheduleDraft, next.vehicleId, next)
   }
 
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -346,7 +357,7 @@ export const ScheduledMaintenancePage = () => {
                       <Button
                         variant="secondary"
                         onClick={() => {
-                          setDraft(buildDraftFromSchedule(schedule))
+                          setDraft(buildDraftFromSchedule(userBundle.profile.vehicleId, schedule))
                           window.scrollTo({ top: 0, behavior: 'smooth' })
                         }}
                       >
@@ -357,6 +368,7 @@ export const ScheduledMaintenancePage = () => {
                           <Button
                             onClick={() => {
                               const draftRecord = {
+                                vehicleId: userBundle.profile.vehicleId,
                                 date: today(),
                                 odometerKm: currentOdometerKm,
                                 selectedItemCodes: schedule.items.map((item) => item.code),

@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+__pycache__/
+*.spec
+
+tools/build/
+tools/dist/

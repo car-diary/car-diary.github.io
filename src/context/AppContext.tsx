@@ -450,6 +450,10 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     }
 
     await withSaving(async () => {
+      if (draft.vehicleId !== userBundle.profile.vehicleId) {
+        throw new Error('다른 차량의 임시 정비내역은 저장할 수 없습니다.')
+      }
+
       if (draft.selectedItemCodes.length === 0) {
         throw new Error('정비항목을 하나 이상 선택하세요.')
       }
@@ -711,6 +715,10 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     }
 
     await withSaving(async () => {
+      if (draft.vehicleId !== userBundle.profile.vehicleId) {
+        throw new Error('다른 차량의 임시 정비예정은 저장할 수 없습니다.')
+      }
+
       const existingSchedule = userBundle.scheduledMaintenance.items.find(
         (item) => item.id === draft.id,
       )
