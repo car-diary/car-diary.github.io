@@ -37,7 +37,15 @@
       "source": "manual",
       "note": "",
       "relatedRecordId": null
+    },
+    {
+      "id": "odo_d05eae03115f43f1",
+      "recordedAt": "2026-04-04T04:58:17.284Z",
+      "odometerKm": 74600,
+      "source": "manual",
+      "note": "",
+      "relatedRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T04:57:45.200Z"
+  "updatedAt": "2026-04-04T04:58:17.284Z"
 }
