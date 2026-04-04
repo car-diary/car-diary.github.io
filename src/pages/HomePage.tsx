@@ -2,7 +2,6 @@ import { addMonths, differenceInCalendarDays, parseISO, startOfDay } from 'date-
 import {
   CalendarClock,
   CircleAlert,
-  HardDrive,
   Plus,
   TrendingUp,
 } from 'lucide-react'
@@ -16,16 +15,13 @@ import {
   Field,
   Input,
   Modal,
-  ProgressBar,
   SectionTitle,
 } from '../components/ui'
 import { ROUTES } from '../constants/app'
 import { useApp } from '../context/appContextStore'
 import {
-  formatBytes,
   formatCurrency,
   formatKilometers,
-  formatPercent,
   formatShortDate,
 } from '../lib/format'
 import { getAttachmentUrl } from '../services/carDiaryRepository'
@@ -88,13 +84,6 @@ export const HomePage = () => {
     })
     .slice(0, 4)
   const recentRecords = userBundle.maintenanceRecords.records.slice(0, 4)
-
-  const storageTone =
-    userBundle.storageSummary.percentUsed >= 95
-      ? 'danger'
-      : userBundle.storageSummary.percentUsed >= 75
-        ? 'warn'
-        : 'info'
 
   const openOdometerModal = () => {
     setOdometerValue(String(userBundle.profile.currentOdometerKm))
@@ -174,11 +163,20 @@ export const HomePage = () => {
               <p className="text-3xl font-semibold">
                 {formatCurrency(dashboardSummary.monthlySpend)}
               </p>
-              <p className="mt-2 text-sm text-muted">
-                연간 누적 {formatCurrency(dashboardSummary.yearlySpend)}
-              </p>
             </div>
             <TrendingUp className="h-8 w-8 text-success" />
+          </div>
+        </Card>
+
+        <Card>
+          <p className="text-sm text-muted">올해 지출</p>
+          <div className="mt-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-3xl font-semibold">
+                {formatCurrency(dashboardSummary.yearlySpend)}
+              </p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-accentSoft" />
           </div>
         </Card>
 
@@ -192,28 +190,6 @@ export const HomePage = () => {
               </p>
             </div>
             <CalendarClock className="h-8 w-8 text-warn" />
-          </div>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">저장공간</p>
-          <div className="mt-4">
-            <div className="flex items-end justify-between gap-3">
-              <p className="text-3xl font-semibold">
-                {formatPercent(userBundle.storageSummary.percentUsed)}
-              </p>
-              <HardDrive className="h-8 w-8 text-accentSoft" />
-            </div>
-            <p className="mt-2 text-sm text-muted">
-              {formatBytes(userBundle.storageSummary.usedBytes)} /{' '}
-              {formatBytes(userBundle.storageSummary.limitBytes)}
-            </p>
-            <div className="mt-4">
-              <ProgressBar
-                value={userBundle.storageSummary.percentUsed}
-                tone={storageTone}
-              />
-            </div>
           </div>
         </Card>
       </div>
