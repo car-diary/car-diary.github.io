@@ -1,5 +1,5 @@
 import { ImagePlus, List, RotateCcw, Wrench } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -38,6 +38,21 @@ const buildNumericFieldState = (draft: MaintenanceRecordDraft): NumericFieldStat
   totalCost: String(draft.totalCost),
 })
 
+const createInitialEditorState = (
+  vehicleId: string,
+  currentOdometerKm: number,
+) => {
+  const initialDraft = readMaintenanceRecordDraft(vehicleId, currentOdometerKm)
+
+  return {
+    draft: initialDraft,
+    numericFields: buildNumericFieldState(initialDraft),
+    isTotalCostManual:
+      initialDraft.totalCost !==
+      calculateTotalCost(initialDraft.partsCost, initialDraft.laborCost),
+  }
+}
+
 interface MaintenanceRecordEditorProps {
   vehicleId: string
   currentOdometerKm: number
@@ -52,18 +67,21 @@ const MaintenanceRecordEditor = ({
   saveMaintenanceRecord,
 }: MaintenanceRecordEditorProps) => {
   const navigate = useNavigate()
-  const [draft, setDraft] = useState<MaintenanceRecordDraft>(() =>
-    readMaintenanceRecordDraft(vehicleId, currentOdometerKm),
+  const initialEditorStateRef = useRef<ReturnType<typeof createInitialEditorState> | null>(null)
+  if (initialEditorStateRef.current === null) {
+    initialEditorStateRef.current = createInitialEditorState(vehicleId, currentOdometerKm)
+  }
+  const initialEditorState = initialEditorStateRef.current
+  const [draft, setDraft] = useState<MaintenanceRecordDraft>(initialEditorState.draft)
+  const [numericFields, setNumericFields] = useState<NumericFieldState>(
+    initialEditorState.numericFields,
   )
-  const [numericFields, setNumericFields] = useState<NumericFieldState>(() =>
-    buildNumericFieldState(readMaintenanceRecordDraft(vehicleId, currentOdometerKm)),
+  const [isTotalCostManual, setIsTotalCostManual] = useState(
+    initialEditorState.isTotalCostManual,
   )
-  const [isTotalCostManual, setIsTotalCostManual] = useState(() => {
-    const initialDraft = readMaintenanceRecordDraft(vehicleId, currentOdometerKm)
-    return initialDraft.totalCost !== calculateTotalCost(initialDraft.partsCost, initialDraft.laborCost)
-  })
   const [formError, setFormError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const previousCurrentOdometerRef = useRef(currentOdometerKm)
 
   useEffect(() => {
     persistMaintenanceRecordDraft(draft)
@@ -80,6 +98,35 @@ const MaintenanceRecordEditor = ({
   const updateDraft = (updater: (current: MaintenanceRecordDraft) => MaintenanceRecordDraft) => {
     setDraft((current) => updater(current))
   }
+
+  const syncDraftOdometer = useCallback((nextOdometerKm: number) => {
+    setNumericFields((current) => ({
+      ...current,
+      odometerKm: String(nextOdometerKm),
+    }))
+    setDraft((current) => ({
+      ...current,
+      odometerKm: nextOdometerKm,
+    }))
+  }, [])
+
+  useEffect(() => {
+    const previousCurrentOdometerKm = previousCurrentOdometerRef.current
+    if (currentOdometerKm === previousCurrentOdometerKm) {
+      return
+    }
+
+    const isFreshDraft = !draft.id
+    const isStillFollowingCurrentOdometer =
+      draft.odometerKm === previousCurrentOdometerKm &&
+      numericFields.odometerKm === String(previousCurrentOdometerKm)
+
+    if (isFreshDraft && isStillFollowingCurrentOdometer) {
+      syncDraftOdometer(currentOdometerKm)
+    }
+
+    previousCurrentOdometerRef.current = currentOdometerKm
+  }, [currentOdometerKm, draft.id, draft.odometerKm, numericFields.odometerKm, syncDraftOdometer])
 
   const handleCostChange = (field: 'partsCost' | 'laborCost', rawValue: string) => {
     setNumericFields((current) => {
@@ -174,7 +221,7 @@ const MaintenanceRecordEditor = ({
               <List className="h-4 w-4" />
               정비목록
             </Button>
-            <Button variant="ghost" onClick={resetDraft}>
+            <Button variant="ghost" onClick={resetDraft} disabled={isSubmitting}>
               <RotateCcw className="h-4 w-4" />
               새로 작성
             </Button>
@@ -196,11 +243,23 @@ const MaintenanceRecordEditor = ({
               />
             </Field>
             <Field label="주행거리">
-              <Input
-                type="number"
-                value={numericFields.odometerKm}
-                onChange={(event) => handleOdometerChange(event.target.value)}
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={numericFields.odometerKm}
+                  onChange={(event) => handleOdometerChange(event.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => syncDraftOdometer(currentOdometerKm)}
+                  disabled={isSubmitting}
+                >
+                  현재값
+                </Button>
+              </div>
             </Field>
             <Field label="정비업체명">
               <Input
