@@ -233,31 +233,6 @@ export const Modal = ({
   )
 }
 
-export const PageHero = ({
-  title,
-  description,
-  aside,
-}: {
-  title: string
-  description: string
-  aside?: ReactNode
-}) => (
-  <div className="rounded-[2rem] border border-border/70 bg-gradient-to-br from-panelAlt via-panel to-panel p-6 shadow-panel">
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-      <div className="max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accentSoft">
-          Car Diary
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-text md:text-4xl">
-          {title}
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-muted md:text-base">{description}</p>
-      </div>
-      {aside}
-    </div>
-  </div>
-)
-
 export const LoadingOverlay = ({ visible }: { visible: boolean }) =>
   visible ? (
     <div className="fixed inset-0 z-40 grid place-items-center bg-slate-950/35 backdrop-blur-sm">

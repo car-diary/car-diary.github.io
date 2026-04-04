@@ -17,7 +17,6 @@ import {
   Field,
   Input,
   Modal,
-  PageHero,
   SectionTitle,
   TextArea,
 } from '../components/ui'
@@ -143,16 +142,17 @@ export const ScheduledMaintenancePage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHero
-        title="정비예정"
-        description="예정일 또는 목표주행거리 기준으로 정비를 등록하고, 홈 경고와 정비내역 전환 흐름에 연결합니다."
-      />
+      <div className="rounded-[2rem] border border-border/70 bg-gradient-to-r from-panel to-panelAlt px-5 py-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accentSoft">
+          Schedule
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">정비예정</h1>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <Card>
           <SectionTitle
             title={draft.id ? '정비예정 수정' : '정비예정 추가'}
-            description="예정일만, 목표주행거리만, 또는 둘 다 등록할 수 있습니다."
             action={
               <Button variant="ghost" onClick={resetDraft}>
                 <RotateCcw className="h-4 w-4" />
@@ -285,7 +285,6 @@ export const ScheduledMaintenancePage = () => {
         <Card>
           <SectionTitle
             title="정비예정 목록"
-            description="정비요망, 예정일 경과, 곧 정비 예정 상태를 직관적으로 보여줍니다."
             action={
               <select
                 className="h-11 rounded-2xl border border-border bg-panelAlt px-4 text-sm"
@@ -304,7 +303,7 @@ export const ScheduledMaintenancePage = () => {
             {filteredSchedules.length === 0 ? (
               <EmptyState
                 title="등록된 정비예정이 없습니다."
-                description="필요한 소모품이나 정비주기를 먼저 등록해두면 홈 경고와 통계에 연결됩니다."
+                description="정비예정을 추가하세요."
               />
             ) : (
               filteredSchedules.map((schedule) => (
