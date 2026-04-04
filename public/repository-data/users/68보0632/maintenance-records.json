@@ -1,5 +1,31 @@
 {
   "vehicleId": "68보0632",
-  "records": [],
-  "updatedAt": "2026-04-04T05:01:27.844Z"
+  "records": [
+    {
+      "id": "record_7d5c10f6701f406d",
+      "date": "2026-04-03",
+      "odometerKm": 74600,
+      "items": [
+        {
+          "code": "consumables:정기점검",
+          "categoryKey": "consumables",
+          "label": "정기점검",
+          "isCustom": false
+        }
+      ],
+      "customItemsText": "",
+      "shopName": "공임나라 독산점",
+      "partsCost": 0,
+      "laborCost": 15000,
+      "totalCost": 15000,
+      "notes": "오일류 및 하부 상태 특이 사항 없음",
+      "photos": [],
+      "receiptPhotos": [],
+      "representativePhotoId": null,
+      "scheduledSourceId": null,
+      "createdAt": "2026-04-04T07:55:55.935Z",
+      "updatedAt": "2026-04-04T07:55:55.935Z"
+    }
+  ],
+  "updatedAt": "2026-04-04T07:55:55.935Z"
 }
