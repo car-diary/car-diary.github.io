@@ -1,0 +1,31 @@
+{
+  "vehicleId": "123부1234",
+  "limitBytes": 314572800,
+  "usedBytes": 647,
+  "jsonBytes": 647,
+  "attachmentBytes": 0,
+  "percentUsed": 0.0002,
+  "fileBreakdown": [
+    {
+      "path": "profile.json",
+      "bytes": 343,
+      "kind": "json"
+    },
+    {
+      "path": "odometer-history.json",
+      "bytes": 120,
+      "kind": "json"
+    },
+    {
+      "path": "maintenance-records.json",
+      "bytes": 93,
+      "kind": "json"
+    },
+    {
+      "path": "scheduled-maintenance.json",
+      "bytes": 91,
+      "kind": "json"
+    }
+  ],
+  "updatedAt": "2026-04-04T07:53:26Z"
+}

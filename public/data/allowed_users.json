@@ -10,5 +10,11 @@
     "displayName": "67부1213",
     "profilePath": "public/repository-data/users/67부1213/profile.json",
     "notes": null
+  },
+  {
+    "vehicleId": "123부1234",
+    "displayName": "123부1234",
+    "profilePath": "public/repository-data/users/123부1234/profile.json",
+    "notes": null
   }
 ]
