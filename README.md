@@ -1,35 +1,52 @@
 # Car Diary
 
-GitHub Pages에 배포되는 차량 정비/차계부 웹앱입니다.  
-허용된 차량번호만 로그인할 수 있고, 정비내역, 정비예정, 주행거리, 사진, 영수증 데이터를 GitHub 저장소 JSON과 이미지 파일에 기록합니다.
+차량번호 단위로 차계부, 정비내역, 정비예정, 사진, 영수증을 관리하는 GitHub Pages 기반 정적 웹앱입니다.
 
-## 1. 핵심 구조
+운영 주소:
 
-- 프론트엔드: React + TypeScript + Vite + Tailwind CSS
-- 라우팅: `HashRouter`
-- 배포: GitHub Pages
-- 데이터 저장: 같은 저장소의 `public/repository-data` 경로
-- 허용 차량 관리: 로컬 `tools/allowed_vehicle_ids.txt`에서 빌드
+- `https://car-diary.github.io/`
 
-`HashRouter`를 사용한 이유:
+현재 운영 기준:
 
-- GitHub Pages는 정적 호스팅이므로 직접 경로 진입 시 서버 라우팅이 없습니다.
-- `#/records`, `#/scheduled` 형태로 경로를 고정하면 새로고침과 직접 진입이 안정적입니다.
-- 별도 `404.html` 라우팅 트릭보다 단순하고 유지보수가 쉽습니다.
+- 로그인은 `차량번호만` 입력합니다.
+- 비밀번호 입력 UI는 없습니다.
+- GitHub token 입력 UI는 없습니다.
+- 데이터 읽기와 화면 렌더링은 GitHub Pages 정적 파일 기준으로 동작합니다.
+- 데이터 저장은 GitHub API를 사용합니다.
+- 강한 보안 제품이 아니라 개인 운영 편의 우선 구조입니다.
 
-## 2. 로그인 방식
+## 기술 스택
 
-- 로그인 화면에서는 차량번호만 입력합니다.
-- 차량번호가 `public/data/allowed_users.json`에 있으면 접속할 수 있습니다.
-- 처음 접속한 차량번호에 사용자 데이터 폴더가 없으면 앱이 기본 JSON 문서를 생성합니다.
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- lucide-react
+- Recharts
+- React Router `HashRouter`
 
-주의:
+`HashRouter`를 쓰는 이유:
 
-- 배포 빌드에는 GitHub API 쓰기용 값이 포함될 수 있습니다.
-- 이 방식은 강한 보안 구조가 아닙니다.
-- 공개 저장소와 개인 프로젝트 운영 편의를 우선한 구조입니다.
+- GitHub Pages는 서버 라우팅이 없습니다.
+- `#/records`, `#/scheduled`처럼 해시 라우팅을 쓰면 새로고침과 직접 진입이 안정적입니다.
+- 별도 `404.html` 우회보다 관리가 단순합니다.
 
-## 3. 데이터 구조
+## 현재 로그인 방식
+
+- 로그인 화면에서 차량번호만 입력합니다.
+- 입력한 차량번호가 `public/data/allowed_users.json`에 있으면 로그인됩니다.
+- 세션은 브라우저 `sessionStorage` 기준으로 유지됩니다.
+- 다른 차량이 자동으로 로그인되면 안 되도록 현재 세션 차량번호 기준으로만 동작합니다.
+
+중요:
+
+- 이 프로젝트는 강보안 서비스가 아닙니다.
+- GitHub 쓰기 권한은 배포 빌드 시 `VITE_GITHUB_TOKEN`으로 주입됩니다.
+- 따라서 공개 서비스용 강보안 구조로 보시면 안 됩니다.
+
+## 데이터 구조
+
+사용자 데이터는 차량번호별로 완전히 분리됩니다.
 
 ```text
 public/
@@ -48,139 +65,131 @@ public/
         receipts/
 ```
 
-### 3-1. `allowed_users.json`
-
-```json
-[
-  {
-    "vehicleId": "68보0632",
-    "displayName": "68보0632",
-    "profilePath": "public/repository-data/users/68보0632/profile.json",
-    "notes": null
-  }
-]
-```
-
-### 3-2. `profile.json`
-
-```json
-{
-  "vehicleId": "68보0632",
-  "nickname": "68보0632",
-  "manufacturer": "",
-  "modelName": "차량 정보 미입력",
-  "trim": "",
-  "modelYear": 2026,
-  "fuelType": "미입력",
-  "purchaseDate": null,
-  "currentOdometerKm": 0,
-  "createdAt": "2026-04-03T00:00:00.000Z",
-  "updatedAt": "2026-04-03T00:00:00.000Z",
-  "notes": ""
-}
-```
-
-### 3-3. `maintenance-records.json`
-
-```json
-{
-  "vehicleId": "68보0632",
-  "records": [],
-  "updatedAt": "2026-04-03T00:00:00.000Z"
-}
-```
-
-### 3-4. `scheduled-maintenance.json`
-
-```json
-{
-  "vehicleId": "68보0632",
-  "items": [],
-  "updatedAt": "2026-04-03T00:00:00.000Z"
-}
-```
-
-### 3-5. `storage-summary.json`
-
-```json
-{
-  "vehicleId": "68보0632",
-  "limitBytes": 314572800,
-  "usedBytes": 0,
-  "jsonBytes": 0,
-  "attachmentBytes": 0,
-  "percentUsed": 0,
-  "fileBreakdown": [],
-  "updatedAt": "2026-04-03T00:00:00.000Z"
-}
-```
-
-## 4. 허용 차량번호 관리 방법
-
-### 4-1. 원본 파일
-
-경로:
+예시:
 
 ```text
-tools/allowed_vehicle_ids.txt
+public/repository-data/users/68보0632/profile.json
+public/repository-data/users/68보0632/maintenance-records.json
+public/repository-data/users/67부1213/profile.json
 ```
+
+각 차량은 자기 폴더 안의 JSON과 첨부파일만 읽고 씁니다.
+
+## 차량 등록 방법
+
+가장 쉬운 방법은 리포 루트의 관리자 프로그램을 사용하는 것입니다.
+
+파일:
+
+- `CarDiaryAdmin.exe`
+
+차량 등록 순서:
+
+1. `CarDiaryAdmin.exe`를 실행합니다.
+2. 오른쪽 입력칸에 차량번호를 입력합니다.
+   예: `68보0632`
+3. `차량번호 등록` 버튼을 누릅니다.
+4. 등록이 끝나면 `빌드 + GitHub Pages 배포` 버튼을 누릅니다.
+5. 로그에 배포 완료가 뜨면 사이트에서 그 차량번호로 로그인할 수 있습니다.
+
+차량 등록 시 실제로 일어나는 일:
+
+- `tools/allowed_vehicle_ids.txt`에 차량번호가 추가됩니다.
+- `public/data/allowed_users.json`이 다시 생성됩니다.
+- `public/repository-data/users/{vehicleId}/` 폴더가 생성됩니다.
+- 아래 기본 파일이 생성됩니다.
+
+```text
+profile.json
+odometer-history.json
+maintenance-records.json
+scheduled-maintenance.json
+storage-summary.json
+```
+
+중요:
+
+- `차량번호 등록` 버튼만 눌러서는 GitHub Pages 사이트에 아직 반영되지 않습니다.
+- `빌드 + GitHub Pages 배포`까지 눌러야 실제 사이트에 반영됩니다.
+
+## 차량 삭제 방법
+
+관리자 프로그램에서만 삭제합니다.
+
+순서:
+
+1. `CarDiaryAdmin.exe`를 실행합니다.
+2. 목록에서 삭제할 차량번호를 선택합니다.
+3. `선택 차량번호 삭제`를 누릅니다.
+4. 그 다음 `빌드 + GitHub Pages 배포`를 누릅니다.
+
+차량 삭제 시 실제로 일어나는 일:
+
+- `tools/allowed_vehicle_ids.txt`에서 해당 차량번호가 제거됩니다.
+- `public/repository-data/users/{vehicleId}` 폴더가 통째로 삭제됩니다.
+- 즉, 해당 차량의 실제 데이터도 함께 삭제됩니다.
+
+주의:
+
+- 이 삭제는 되돌리지 않는 기준으로 생각해야 합니다.
+- 폴더까지 지우므로 정비내역, 주행거리, 사진, 영수증도 같이 사라집니다.
+
+## 관리자 프로그램 동작 범위
+
+`CarDiaryAdmin.exe`에서 하는 일:
+
+- 현재 등록된 차량번호 목록 표시
+- 새 차량번호 등록
+- 선택한 차량번호 삭제
+- allowed users 재생성
+- Git 커밋 / 푸시
+- GitHub Pages 배포 완료까지 확인
+
+안전 장치:
+
+- 새 차량 추가 또는 선택한 차량 삭제 외의 기존 차량 데이터 변경이 감지되면 배포를 중단합니다.
+- 즉, 실수로 다른 차량 폴더를 건드린 상태면 관리자 배포가 막히도록 되어 있습니다.
+
+## `allowed_vehicle_ids.txt` 직접 관리
+
+관리자 프로그램 대신 직접 관리할 수도 있습니다.
+
+원본 파일:
+
+- `tools/allowed_vehicle_ids.txt`
 
 형식:
 
 - 한 줄에 차량번호 1개
 - 빈 줄 무시
-- `#`로 시작하는 줄은 주석
+- `#`으로 시작하는 줄은 주석
 
-샘플:
+예시:
 
 ```text
 # allowed vehicle ids
 68보0632
-123가4567
-45나8888
+67부1213
 ```
 
-### 4-2. 빌드 명령
+빌드 명령:
 
 ```bash
 python tools/build_allowed_users.py
 ```
 
-또는
+또는:
 
 ```bat
 build_allowed_users.bat
 ```
 
-### 4-3. 콘솔 출력 예시
+생성 결과:
 
-정상 예시:
+- `public/data/allowed_users.json`
+- `public/data/allowed_users.meta.json`
 
-```text
-=== allowed users build summary ===
-읽은 차량번호 수: 3
-유효한 차량번호 수: 3
-형식 오류 수: 0
-중복 차량번호 수: 0
-출력 파일: C:\...\public\data\allowed_users.json
-메타 파일: C:\...\public\data\allowed_users.meta.json
-
-[done] allowed_users.json 생성이 완료되었습니다.
-```
-
-오류 예시:
-
-```text
-[error] 잘못된 차량번호 형식
-  - line 4: 12345678
-
-[error] 중복 차량번호
-  - 68보0632: first line 2, duplicate line 5
-
-[fail] 오류를 수정한 뒤 다시 실행하세요.
-```
-
-## 5. 실행 방법
+## 로컬 실행
 
 ```bash
 npm install
@@ -193,79 +202,74 @@ npm run dev
 npm run build
 ```
 
-## 6. GitHub Pages 배포
+## GitHub Pages 배포
 
-이 저장소는 GitHub Actions로 Pages를 배포합니다.
+워크플로 파일:
 
-워크플로:
+- `.github/workflows/deploy.yml`
 
-```text
-.github/workflows/deploy.yml
-```
+배포 트리거:
 
-동작:
+- `main` 브랜치 푸시
+- GitHub Actions 수동 실행
 
-1. `main` 브랜치 푸시
-2. `python tools/build_allowed_users.py`
-3. `npm run build`
-4. `dist` 업로드
-5. GitHub Pages 배포
+배포 순서:
 
-## 7. GitHub 저장 연동
+1. `python tools/build_allowed_users.py`
+2. `npm run build`
+3. `dist` 업로드
+4. GitHub Pages 배포
 
-- 읽기: `raw.githubusercontent.com` 경로에서 공개 JSON/이미지 조회
-- 쓰기: GitHub Contents API 사용
-- 이미지 업로드: 압축 후 base64 변환 뒤 업로드
-- 삭제: Contents API의 `DELETE` 사용
+## GitHub token 운영 방식
 
-## 8. 설정 값
+현재 방식:
 
-주요 설정 파일:
+- GitHub Actions secret `VITE_GITHUB_TOKEN`을 사용합니다.
+- 빌드 시 이 값이 프론트 번들에 주입됩니다.
+- 앱에는 token 입력 화면이 없습니다.
 
-```text
-src/constants/app.ts
-```
+반드시 알아둘 점:
 
-기본값:
+- 이 방식은 강보안이 아닙니다.
+- token이 클라이언트 빌드에 포함되는 구조입니다.
+- 개인 프로젝트, 소규모 운영 전제에서만 사용해야 합니다.
 
-- `repoOwner: car-diary`
-- `repoName: car-diary.github.io`
-- `branch: main`
-- `dataRootPath: public/repository-data`
-- `allowedUsersPath: public/data/allowed_users.json`
-- `storageLimitBytes: 300MB`
+## 주요 파일
 
-## 9. 배포 빌드용 저장 권한 값
+- `CarDiaryAdmin.exe`
+- `build_allowed_users.bat`
+- `tools/build_allowed_users.py`
+- `tools/build_admin_tool.bat`
+- `tools/car_diary_admin.py`
+- `tools/allowed_vehicle_ids.txt`
+- `src/constants/app.ts`
+- `.github/workflows/deploy.yml`
 
-GitHub Actions secret:
-
-```text
-VITE_GITHUB_TOKEN
-```
-
-워크플로는 이 값을 `VITE_GITHUB_TOKEN` 환경 변수로 빌드에 주입합니다.
-
-중요:
-
-- 이 값은 클라이언트 번들에 포함될 수 있습니다.
-- 따라서 강한 보안이 필요한 프로젝트에는 적합하지 않습니다.
-- 이 저장소는 개인 운영 편의와 단순한 구조를 우선합니다.
-
-## 10. 현재 포함 기능
+## 현재 앱 기능
 
 - 차량번호 로그인
-- 홈 대시보드
+- 대시보드
 - 주행거리 갱신
-- 정비내역 등록, 수정, 삭제, 복제
-- 정비예정 등록, 완료 처리, 삭제
-- 통계 차트
-- 사진 및 영수증 업로드
-- 저장공간 사용량 계산
-- 내보내기, 가져오기, CSV 내보내기
+- 정비내역 등록 / 수정 / 삭제 / 복제
+- 정비목록 조회 / 검색 / 필터
+- 정비예정 등록 / 수정 / 완료 / 삭제
+- 통계 화면
+- 사진 / 영수증 첨부
+- 저장공간 계산
+- JSON 백업 / 복원
+- CSV 내보내기
+- 다크 / 라이트 테마
 
-## 11. 개발 메모
+## 차량 등록 관련 자주 헷갈리는 점
 
-- 정비항목은 코드 상수로 관리합니다.
-- `프론트` / `리어` 표현을 통일합니다.
-- 저장공간 한도는 계정당 300MB입니다.
-- 공개 저장소 특성상 민감 정보 저장은 피해야 합니다.
+- `차량번호 등록`만 누르면 사이트에는 아직 안 보입니다.
+- 반드시 `빌드 + GitHub Pages 배포`까지 해야 합니다.
+- 새 차량이 로그인 안 되면 배포가 끝났는지 먼저 확인해야 합니다.
+- 차량 삭제는 실제 사용자 폴더까지 지우는 동작입니다.
+- 관리자 프로그램 배포는 기존 다른 차량 데이터가 섞여 있으면 일부러 중단됩니다.
+
+## 참고
+
+- 실제 앱 데이터는 차량번호별 폴더로 분리되어 저장됩니다.
+- 사진도 정비내역에 연결된 첨부파일로 저장됩니다.
+- 로그인은 차량번호만 사용합니다.
