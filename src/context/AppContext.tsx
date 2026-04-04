@@ -767,8 +767,8 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       const shouldFollowSelectedItems =
         normalizedTitle === '' ||
         (existingSchedule !== undefined &&
-          normalizedTitle === existingSchedule.title &&
-          existingSchedule.title === previousGeneratedTitle)
+          (normalizedTitle === existingSchedule.title ||
+            normalizedTitle === previousGeneratedTitle))
       const resolvedTitle =
         shouldFollowSelectedItems && generatedTitle ? generatedTitle : normalizedTitle
 

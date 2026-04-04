@@ -1,9 +1,13 @@
 import { CalendarCheck2, CalendarClock, RotateCcw, Trash2 } from 'lucide-react'
+import { differenceInCalendarDays, parseISO, startOfDay } from 'date-fns'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../constants/app'
-import { MAINTENANCE_CATEGORIES } from '../constants/maintenanceItems'
+import {
+  MAINTENANCE_CATEGORIES,
+  MAINTENANCE_ITEM_LOOKUP,
+} from '../constants/maintenanceItems'
 import { useApp } from '../context/appContextStore'
 import { persistMaintenanceRecordDraft } from '../features/maintenanceRecords'
 import {
@@ -54,6 +58,42 @@ const buildDraftFromSchedule = (
   notes: schedule.notes,
 })
 
+const buildGeneratedScheduleTitle = (
+  selectedItemCodes: string[],
+  fallbackTitle: string,
+) =>
+  selectedItemCodes
+    .map((code) => {
+      const lookup = MAINTENANCE_ITEM_LOOKUP.get(code)
+      if (!lookup) {
+        return fallbackTitle.trim() || '기타 직접입력'
+      }
+
+      if (lookup.label === '기타 직접입력') {
+        return fallbackTitle.trim() || lookup.label
+      }
+
+      return lookup.label
+    })
+    .filter(Boolean)
+    .join(', ')
+
+const getScheduleSortDistanceKm = (
+  schedule: ScheduledMaintenance,
+  currentOdometerKm: number,
+  todayDate: Date,
+) => {
+  if (schedule.targetOdometerKm !== null) {
+    return schedule.targetOdometerKm - currentOdometerKm
+  }
+
+  if (schedule.scheduledDate) {
+    return differenceInCalendarDays(parseISO(schedule.scheduledDate), todayDate) * 600
+  }
+
+  return Number.POSITIVE_INFINITY
+}
+
 interface ScheduledMaintenanceEditorProps {
   vehicleId: string
   currentOdometerKm: number
@@ -74,6 +114,7 @@ const ScheduledMaintenanceEditor = ({
   markScheduleCompleted,
 }: ScheduledMaintenanceEditorProps) => {
   const navigate = useNavigate()
+  const todayDate = startOfDay(new Date())
   const [draft, setDraft] = useState<ScheduledMaintenanceDraft>(() =>
     ({
       ...createEmptyDraft(vehicleId),
@@ -99,10 +140,35 @@ const ScheduledMaintenanceEditor = ({
 
   const filteredSchedules = useMemo(
     () =>
-      schedules.filter((schedule) =>
-        statusFilter === 'all' ? true : schedule.status === statusFilter,
-      ),
-    [schedules, statusFilter],
+      schedules
+        .filter((schedule) =>
+          statusFilter === 'all' ? true : schedule.status === statusFilter,
+        )
+        .sort((left, right) => {
+          const leftDistance = getScheduleSortDistanceKm(
+            left,
+            currentOdometerKm,
+            todayDate,
+          )
+          const rightDistance = getScheduleSortDistanceKm(
+            right,
+            currentOdometerKm,
+            todayDate,
+          )
+
+          if (leftDistance !== rightDistance) {
+            return leftDistance - rightDistance
+          }
+
+          const leftDate = left.scheduledDate ?? '9999-12-31'
+          const rightDate = right.scheduledDate ?? '9999-12-31'
+          if (leftDate !== rightDate) {
+            return leftDate.localeCompare(rightDate)
+          }
+
+          return left.title.localeCompare(right.title, 'ko')
+        }),
+    [currentOdometerKm, schedules, statusFilter, todayDate],
   )
 
   const resetDraft = () => {
@@ -206,12 +272,31 @@ const ScheduledMaintenanceEditor = ({
                             }`}
                             onClick={() =>
                               setDraft((current) => ({
-                                ...current,
-                                selectedItemCodes: checked
-                                  ? current.selectedItemCodes.filter(
-                                      (code) => code !== item.code,
-                                    )
-                                  : [...current.selectedItemCodes, item.code],
+                                ...(() => {
+                                  const nextSelectedItemCodes = checked
+                                    ? current.selectedItemCodes.filter(
+                                        (code) => code !== item.code,
+                                      )
+                                    : [...current.selectedItemCodes, item.code]
+                                  const currentGeneratedTitle = buildGeneratedScheduleTitle(
+                                    current.selectedItemCodes,
+                                    current.title,
+                                  )
+                                  const shouldSyncTitle =
+                                    current.title.trim() === '' ||
+                                    current.title.trim() === currentGeneratedTitle
+
+                                  return {
+                                    ...current,
+                                    selectedItemCodes: nextSelectedItemCodes,
+                                    title: shouldSyncTitle
+                                      ? buildGeneratedScheduleTitle(
+                                          nextSelectedItemCodes,
+                                          current.title,
+                                        )
+                                      : current.title,
+                                  }
+                                })(),
                               }))
                             }
                           >
