@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { LOCAL_STORAGE_KEYS, ROUTES } from '../constants/app'
 import { MAINTENANCE_CATEGORIES } from '../constants/maintenanceItems'
 import { useApp } from '../context/AppContext'
+import { persistMaintenanceRecordDraft } from '../features/maintenanceRecords'
 import { formatCurrency, formatKilometers, formatShortDate } from '../lib/format'
 import { safeJsonParse } from '../lib/utils'
 import type { ScheduledMaintenance, ScheduledMaintenanceDraft } from '../types/models'
@@ -359,12 +360,12 @@ export const ScheduledMaintenancePage = () => {
                               const draftRecord = {
                                 date: today(),
                                 odometerKm: currentOdometerKm,
-                                allowLowerOdometer: false,
                                 selectedItemCodes: schedule.items.map((item) => item.code),
                                 customItemsText: '',
                                 shopName: '',
                                 partsCost: schedule.expectedCost ?? 0,
                                 laborCost: 0,
+                                totalCost: schedule.expectedCost ?? 0,
                                 notes: schedule.notes,
                                 representativePhotoId: null,
                                 existingPhotos: [],
@@ -373,10 +374,7 @@ export const ScheduledMaintenancePage = () => {
                                 newReceipts: [],
                                 scheduledSourceId: schedule.id,
                               }
-                              localStorage.setItem(
-                                LOCAL_STORAGE_KEYS.recordDraft,
-                                JSON.stringify(draftRecord),
-                              )
+                              persistMaintenanceRecordDraft(draftRecord)
                               navigate(ROUTES.records)
                             }}
                             disabled={isReadOnly}

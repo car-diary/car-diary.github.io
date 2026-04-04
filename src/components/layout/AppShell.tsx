@@ -3,6 +3,7 @@ import {
   CalendarClock,
   Gauge,
   HardDriveDownload,
+  List,
   LogOut,
   Menu,
   Settings,
@@ -17,7 +18,8 @@ import { Button, Card, IconButton, LoadingOverlay } from '../ui'
 
 const navItems = [
   { to: ROUTES.home, label: '홈', icon: Gauge },
-  { to: ROUTES.records, label: '정비내역', icon: Wrench },
+  { to: ROUTES.records, label: '정비내역 등록', icon: Wrench },
+  { to: ROUTES.recordList, label: '정비목록', icon: List },
   { to: ROUTES.scheduled, label: '정비예정', icon: CalendarClock },
   { to: ROUTES.statistics, label: '통계', icon: BarChart3 },
   { to: ROUTES.backups, label: '백업', icon: HardDriveDownload },

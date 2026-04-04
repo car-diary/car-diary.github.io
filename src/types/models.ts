@@ -220,12 +220,12 @@ export interface MaintenanceRecordDraft {
   id?: string
   date: string
   odometerKm: number
-  allowLowerOdometer?: boolean
   selectedItemCodes: string[]
   customItemsText: string
   shopName: string
   partsCost: number
   laborCost: number
+  totalCost: number
   notes: string
   representativePhotoId: string | null
   existingPhotos: AttachmentPhoto[]
@@ -249,7 +249,6 @@ export interface ScheduledMaintenanceDraft {
 export interface OdometerUpdateInput {
   odometerKm: number
   note: string
-  force: boolean
 }
 
 export interface ImportPayload {

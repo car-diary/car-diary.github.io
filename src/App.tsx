@@ -26,6 +26,11 @@ const MaintenanceRecordsPage = lazy(() =>
     default: module.MaintenanceRecordsPage,
   })),
 )
+const MaintenanceRecordListPage = lazy(() =>
+  import('./pages/MaintenanceRecordListPage').then((module) => ({
+    default: module.MaintenanceRecordListPage,
+  })),
+)
 const ScheduledMaintenancePage = lazy(() =>
   import('./pages/ScheduledMaintenancePage').then((module) => ({
     default: module.ScheduledMaintenancePage,
@@ -95,6 +100,14 @@ const AppRoutes = () => {
             element={
               <Suspense fallback={<RouteFallback />}>
                 <MaintenanceRecordsPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path={ROUTES.recordList}
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <MaintenanceRecordListPage />
               </Suspense>
             }
           />

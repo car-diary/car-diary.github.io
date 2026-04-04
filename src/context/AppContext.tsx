@@ -80,10 +80,12 @@ const persistSettings = (settings: AppSettings) => {
 
 const persistSession = (session: SessionState | null) => {
   if (!session) {
+    sessionStorage.removeItem(LOCAL_STORAGE_KEYS.session)
     localStorage.removeItem(LOCAL_STORAGE_KEYS.session)
     return
   }
-  localStorage.setItem(LOCAL_STORAGE_KEYS.session, JSON.stringify(session))
+  sessionStorage.setItem(LOCAL_STORAGE_KEYS.session, JSON.stringify(session))
+  localStorage.removeItem(LOCAL_STORAGE_KEYS.session)
 }
 
 const readLocalSettings = (): AppSettings => {
@@ -99,7 +101,8 @@ const readLocalSettings = (): AppSettings => {
 }
 
 const readLocalSession = (): SessionState | null => {
-  const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.session)
+  const raw = sessionStorage.getItem(LOCAL_STORAGE_KEYS.session)
+  localStorage.removeItem(LOCAL_STORAGE_KEYS.session)
   return raw ? safeJsonParse<SessionState | null>(raw, null) : null
 }
 
@@ -393,12 +396,6 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     }
 
     await withSaving(async () => {
-      if (input.odometerKm < userBundle.profile.currentOdometerKm && !input.force) {
-        throw new Error(
-          '현재 주행거리보다 작은 값입니다. 예외 상황이면 강제 저장 옵션을 사용하세요.',
-        )
-      }
-
       const entry: OdometerHistoryEntry = {
         id: createId('odo'),
         recordedAt: new Date().toISOString(),
@@ -443,13 +440,10 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
         throw new Error('정비항목을 하나 이상 선택하세요.')
       }
 
-      if (draft.odometerKm < userBundle.profile.currentOdometerKm && !draft.allowLowerOdometer) {
-        throw new Error(
-          '현재 주행거리보다 작은 정비 주행거리입니다. 확인 후 다시 저장하세요.',
-        )
-      }
-
-      const totalCost = calculateTotalCost(draft.partsCost, draft.laborCost)
+      const totalCost =
+        Number.isFinite(draft.totalCost) && draft.totalCost >= 0
+          ? draft.totalCost
+          : calculateTotalCost(draft.partsCost, draft.laborCost)
       const existingRecord = draft.id
         ? userBundle.maintenanceRecords.records.find((record) => record.id === draft.id)
         : null

@@ -35,7 +35,6 @@ export const HomePage = () => {
   const [odometerValue, setOdometerValue] = useState(
     String(userBundle?.profile.currentOdometerKm ?? 0),
   )
-  const [forceSave, setForceSave] = useState(false)
   const [odometerNote, setOdometerNote] = useState('')
   const [odometerError, setOdometerError] = useState<string | null>(null)
   const [isOdometerModalOpen, setIsOdometerModalOpen] = useState(false)
@@ -75,9 +74,7 @@ export const HomePage = () => {
       await updateOdometer({
         odometerKm: numericValue,
         note: odometerNote,
-        force: forceSave,
       })
-      setForceSave(false)
       setOdometerNote('')
       setIsOdometerModalOpen(false)
     } catch (error) {
@@ -319,15 +316,6 @@ export const HomePage = () => {
               onChange={(event) => setOdometerNote(event.target.value)}
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm text-muted">
-            <input
-              checked={forceSave}
-              onChange={(event) => setForceSave(event.target.checked)}
-              type="checkbox"
-              className="h-4 w-4 rounded border-border bg-panelAlt"
-            />
-            이전 기록보다 작아도 저장
-          </label>
           {odometerError ? <p className="text-sm text-danger">{odometerError}</p> : null}
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button type="submit" className="flex-1">
