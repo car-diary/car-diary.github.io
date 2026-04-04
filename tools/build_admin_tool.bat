@@ -16,7 +16,7 @@ python -m PyInstaller ^
   --onefile ^
   --windowed ^
   --name CarDiaryAdmin ^
-  --distpath "%~dp0dist" ^
+  --distpath "%~dp0.." ^
   --workpath "%~dp0build" ^
   "%~dp0car_diary_admin.py"
 
@@ -25,5 +25,5 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [done] Built: %~dp0dist\CarDiaryAdmin.exe
+echo [done] Built: %~dp0..\CarDiaryAdmin.exe
 exit /b 0
