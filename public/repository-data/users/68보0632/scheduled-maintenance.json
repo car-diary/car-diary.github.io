@@ -2,28 +2,6 @@
   "vehicleId": "68보0632",
   "items": [
     {
-      "id": "schedule_coolant_202604",
-      "title": "냉각수 교환 예정",
-      "items": [
-        {
-          "code": "engine-oil:냉각수 교환",
-          "categoryKey": "engine-oil",
-          "label": "냉각수 교환",
-          "isCustom": false
-        }
-      ],
-      "scheduledDate": "2026-04-05",
-      "targetOdometerKm": 83000,
-      "expectedCost": 120000,
-      "priority": "high",
-      "notes": "장거리 주행 전 점검 포함",
-      "status": "pending",
-      "createdAt": "2026-03-01T03:00:00.000Z",
-      "updatedAt": "2026-03-01T03:00:00.000Z",
-      "completedAt": null,
-      "completedByRecordId": null
-    },
-    {
       "id": "schedule_ac_filter_202604",
       "title": "에어컨 필터 교환",
       "items": [
@@ -68,5 +46,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T05:01:27.844Z"
+  "updatedAt": "2026-04-04T07:55:01.900Z"
 }
