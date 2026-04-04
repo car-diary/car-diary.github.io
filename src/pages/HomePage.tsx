@@ -1,3 +1,4 @@
+import { addMonths, differenceInCalendarDays, parseISO, startOfDay } from 'date-fns'
 import {
   CalendarClock,
   CircleAlert,
@@ -44,8 +45,47 @@ export const HomePage = () => {
     return null
   }
 
-  const scheduledItems = userBundle.scheduledMaintenance.items
+  const now = startOfDay(new Date())
+  const currentOdometerKm = userBundle.profile.currentOdometerKm
+  const upcomingSchedules = userBundle.scheduledMaintenance.items
     .filter((item) => item.status === 'pending')
+    .map((item) => {
+      const scheduledDayDiff = item.scheduledDate
+        ? differenceInCalendarDays(parseISO(item.scheduledDate), now)
+        : null
+      const targetKmDiff =
+        item.targetOdometerKm === null ? null : item.targetOdometerKm - currentOdometerKm
+
+      return {
+        ...item,
+        scheduledDayDiff,
+        targetKmDiff,
+      }
+    })
+    .filter((item) => {
+      const withinSixMonths =
+        item.scheduledDate !== null &&
+        parseISO(item.scheduledDate) <= addMonths(now, 6)
+      const withinTenThousandKm =
+        item.targetKmDiff !== null && item.targetKmDiff <= 10000
+
+      return withinSixMonths || withinTenThousandKm
+    })
+    .sort((left, right) => {
+      const leftDateRank = left.scheduledDayDiff ?? Number.POSITIVE_INFINITY
+      const rightDateRank = right.scheduledDayDiff ?? Number.POSITIVE_INFINITY
+      if (leftDateRank !== rightDateRank) {
+        return leftDateRank - rightDateRank
+      }
+
+      const leftKmRank = left.targetKmDiff ?? Number.POSITIVE_INFINITY
+      const rightKmRank = right.targetKmDiff ?? Number.POSITIVE_INFINITY
+      if (leftKmRank !== rightKmRank) {
+        return leftKmRank - rightKmRank
+      }
+
+      return left.title.localeCompare(right.title, 'ko')
+    })
     .slice(0, 4)
   const recentRecords = userBundle.maintenanceRecords.records.slice(0, 4)
 
@@ -212,38 +252,31 @@ export const HomePage = () => {
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <Card>
-          <SectionTitle title="정비예정" />
+          <SectionTitle title="다가오는 정비 일정" />
           <div className="mt-5 space-y-3">
-            {scheduledItems.length === 0 ? (
+            {upcomingSchedules.length === 0 ? (
               <p className="text-sm text-muted">-</p>
             ) : (
-              scheduledItems.map((item) => (
+              upcomingSchedules.map((item) => (
                 <div key={item.id} className="rounded-2xl border border-border bg-panelAlt p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-semibold">{item.title}</p>
-                      <p className="mt-1 text-sm text-muted">
-                        {formatShortDate(item.scheduledDate)} /{' '}
-                        {item.targetOdometerKm
-                          ? formatKilometers(item.targetOdometerKm)
-                          : '-'}
+                  <div className="space-y-2">
+                    <p className="font-semibold">{item.title}</p>
+                    {item.scheduledDate ? (
+                      <p className="text-sm text-muted">
+                        예정일 {formatShortDate(item.scheduledDate)} ·{' '}
+                        {item.scheduledDayDiff !== null && item.scheduledDayDiff < 0
+                          ? `${Math.abs(item.scheduledDayDiff)}일 경과`
+                          : `D-${item.scheduledDayDiff ?? 0}`}
                       </p>
-                    </div>
-                    <Badge
-                      tone={
-                        item.priority === 'high'
-                          ? 'danger'
-                          : item.priority === 'normal'
-                            ? 'warn'
-                            : 'info'
-                      }
-                    >
-                      {item.priority === 'high'
-                        ? '높음'
-                        : item.priority === 'normal'
-                          ? '보통'
-                          : '낮음'}
-                    </Badge>
+                    ) : null}
+                    {item.targetOdometerKm !== null ? (
+                      <p className="text-sm text-muted">
+                        목표 {formatKilometers(item.targetOdometerKm)} ·{' '}
+                        {item.targetKmDiff !== null && item.targetKmDiff < 0
+                          ? `${formatKilometers(Math.abs(item.targetKmDiff))} 초과`
+                          : `${formatKilometers(item.targetKmDiff ?? 0)} 남음`}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               ))
