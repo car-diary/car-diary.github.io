@@ -1,45 +1,5 @@
 {
   "vehicleId": "68보0632",
-  "records": [
-    {
-      "id": "record_battery_20251204",
-      "date": "2025-12-04",
-      "odometerKm": 79010,
-      "items": [
-        {
-          "code": "battery:배터리 교체",
-          "categoryKey": "battery",
-          "label": "배터리 교체",
-          "isCustom": false
-        }
-      ],
-      "customItemsText": "",
-      "shopName": "동네 배터리센터",
-      "partsCost": 138000,
-      "laborCost": 36000,
-      "totalCost": 174000,
-      "notes": "겨울 대비 선제 교체. 알터네이터 점검도 정상.",
-      "photos": [
-        {
-          "id": "photo_battery_01",
-          "kind": "photo",
-          "fileName": "battery-replacement.svg",
-          "originalFileName": "battery-replacement.svg",
-          "contentType": "image/svg+xml",
-          "bytes": 1722,
-          "width": 1280,
-          "height": 960,
-          "optimized": true,
-          "uploadedAt": "2025-12-04T04:10:00.000Z",
-          "path": "public/repository-data/users/68보0632/photos/battery-replacement.svg"
-        }
-      ],
-      "receiptPhotos": [],
-      "representativePhotoId": "photo_battery_01",
-      "scheduledSourceId": null,
-      "createdAt": "2025-12-04T04:10:00.000Z",
-      "updatedAt": "2025-12-04T04:20:00.000Z"
-    }
-  ],
-  "updatedAt": "2026-04-04T05:01:18.736Z"
+  "records": [],
+  "updatedAt": "2026-04-04T05:01:25.912Z"
 }
