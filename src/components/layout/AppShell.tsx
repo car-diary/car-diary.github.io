@@ -17,13 +17,13 @@ import { cn } from '../../lib/utils'
 import { Button, Card, IconButton, LoadingOverlay } from '../ui'
 
 const navItems = [
-  { to: ROUTES.home, label: '홈', icon: Gauge },
-  { to: ROUTES.records, label: '정비내역 등록', icon: Wrench },
-  { to: ROUTES.recordList, label: '정비목록', icon: List },
-  { to: ROUTES.scheduled, label: '정비예정', icon: CalendarClock },
-  { to: ROUTES.statistics, label: '통계', icon: BarChart3 },
-  { to: ROUTES.backups, label: '백업', icon: HardDriveDownload },
-  { to: ROUTES.settings, label: '설정', icon: Settings },
+  { to: ROUTES.home, label: '홈', icon: Gauge, end: true },
+  { to: ROUTES.records, label: '정비내역 등록', icon: Wrench, end: true },
+  { to: ROUTES.recordList, label: '정비목록', icon: List, end: true },
+  { to: ROUTES.scheduled, label: '정비예정', icon: CalendarClock, end: true },
+  { to: ROUTES.statistics, label: '통계', icon: BarChart3, end: true },
+  { to: ROUTES.backups, label: '백업', icon: HardDriveDownload, end: true },
+  { to: ROUTES.settings, label: '설정', icon: Settings, end: true },
 ]
 
 export const AppShell = () => {
@@ -47,10 +47,11 @@ export const AppShell = () => {
               <h1 className="mt-3 text-2xl font-semibold">{nickname}</h1>
             </div>
             <nav className="space-y-2">
-              {navItems.map(({ to, label, icon: Icon }) => (
+              {navItems.map(({ to, label, icon: Icon, end }) => (
                 <NavLink
                   key={to}
                   to={to}
+                  end={end}
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition',

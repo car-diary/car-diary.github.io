@@ -48,10 +48,7 @@ export const SettingsPage = () => {
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-bg text-accentSoft">
                 <MoonStar className="h-5 w-5" />
               </div>
-              <div>
-                <p className="font-semibold">다크</p>
-                <p className="mt-1 text-sm text-muted">차분한 기본 테마</p>
-              </div>
+              <p className="font-semibold">다크</p>
             </div>
           </button>
 
@@ -68,10 +65,7 @@ export const SettingsPage = () => {
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-bg text-warn">
                 <SunMedium className="h-5 w-5" />
               </div>
-              <div>
-                <p className="font-semibold">라이트</p>
-                <p className="mt-1 text-sm text-muted">밝고 선명한 테마</p>
-              </div>
+              <p className="font-semibold">라이트</p>
             </div>
           </button>
         </div>
