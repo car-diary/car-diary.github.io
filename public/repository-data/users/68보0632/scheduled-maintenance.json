@@ -1,28 +1,5 @@
 {
   "vehicleId": "68보0632",
-  "items": [
-    {
-      "id": "schedule_wiper_202606",
-      "title": "와이퍼 교체",
-      "items": [
-        {
-          "code": "consumables:와이퍼 교체",
-          "categoryKey": "consumables",
-          "label": "와이퍼 교체",
-          "isCustom": false
-        }
-      ],
-      "scheduledDate": null,
-      "targetOdometerKm": 86000,
-      "expectedCost": 28000,
-      "priority": "low",
-      "notes": "우기 오기 전에 교체 예정",
-      "status": "pending",
-      "createdAt": "2026-03-12T05:00:00.000Z",
-      "updatedAt": "2026-03-12T05:00:00.000Z",
-      "completedAt": null,
-      "completedByRecordId": null
-    }
-  ],
-  "updatedAt": "2026-04-04T07:55:08.196Z"
+  "items": [],
+  "updatedAt": "2026-04-04T07:55:13.676Z"
 }
