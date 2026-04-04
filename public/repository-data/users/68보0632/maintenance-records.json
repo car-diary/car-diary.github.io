@@ -2,57 +2,6 @@
   "vehicleId": "68보0632",
   "records": [
     {
-      "id": "record_oil_20260106",
-      "date": "2026-01-06",
-      "odometerKm": 80320,
-      "items": [
-        {
-          "code": "engine-oil:엔진오일 교환",
-          "categoryKey": "engine-oil",
-          "label": "엔진오일 교환",
-          "isCustom": false
-        },
-        {
-          "code": "engine-oil:오일필터 교환",
-          "categoryKey": "engine-oil",
-          "label": "오일필터 교환",
-          "isCustom": false
-        },
-        {
-          "code": "engine-oil:에어필터 교환",
-          "categoryKey": "engine-oil",
-          "label": "에어필터 교환",
-          "isCustom": false
-        }
-      ],
-      "customItemsText": "",
-      "shopName": "현대 블루핸즈 분당점",
-      "partsCost": 98000,
-      "laborCost": 50000,
-      "totalCost": 148000,
-      "notes": "순정 규격 오일 사용. 다음 교환 주기는 8만 8천 km 기준으로 설정.",
-      "photos": [
-        {
-          "id": "photo_oil_01",
-          "kind": "photo",
-          "fileName": "engine-oil.svg",
-          "originalFileName": "engine-oil.svg",
-          "contentType": "image/svg+xml",
-          "bytes": 1768,
-          "width": 1280,
-          "height": 960,
-          "optimized": true,
-          "uploadedAt": "2026-01-06T02:00:00.000Z",
-          "path": "public/repository-data/users/68보0632/photos/engine-oil.svg"
-        }
-      ],
-      "receiptPhotos": [],
-      "representativePhotoId": "photo_oil_01",
-      "scheduledSourceId": null,
-      "createdAt": "2026-01-06T02:00:00.000Z",
-      "updatedAt": "2026-01-06T02:10:00.000Z"
-    },
-    {
       "id": "record_battery_20251204",
       "date": "2025-12-04",
       "odometerKm": 79010,
@@ -92,5 +41,5 @@
       "updatedAt": "2025-12-04T04:20:00.000Z"
     }
   ],
-  "updatedAt": "2026-04-04T05:01:11.992Z"
+  "updatedAt": "2026-04-04T05:01:18.736Z"
 }
