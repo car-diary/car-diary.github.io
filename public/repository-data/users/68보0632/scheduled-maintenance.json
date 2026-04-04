@@ -2,6 +2,28 @@
   "vehicleId": "68보0632",
   "items": [
     {
+      "id": "schedule_c23bd4d4836645bb",
+      "title": "1열 열선시트 시공",
+      "items": [
+        {
+          "code": "consumables:기타 직접입력",
+          "categoryKey": "consumables",
+          "label": "1열 열선시트 시공",
+          "isCustom": true
+        }
+      ],
+      "scheduledDate": null,
+      "targetOdometerKm": 80000,
+      "expectedCost": null,
+      "priority": "normal",
+      "notes": "",
+      "status": "pending",
+      "createdAt": "2026-04-04T08:54:45.055Z",
+      "updatedAt": "2026-04-04T08:54:45.055Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    },
+    {
       "id": "schedule_1dcd2f9cb1c9435b",
       "title": "크루즈 기능 추가",
       "items": [
@@ -80,5 +102,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T08:54:01.823Z"
+  "updatedAt": "2026-04-04T08:54:45.055Z"
 }
