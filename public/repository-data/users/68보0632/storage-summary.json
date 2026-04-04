@@ -1,9 +1,9 @@
 {
   "vehicleId": "68보0632",
   "limitBytes": 314572800,
-  "usedBytes": 15163,
-  "jsonBytes": 8703,
-  "attachmentBytes": 6460,
+  "usedBytes": 10234,
+  "jsonBytes": 6744,
+  "attachmentBytes": 3490,
   "percentUsed": 0,
   "fileBreakdown": [
     {
@@ -18,23 +18,13 @@
     },
     {
       "path": "maintenance-records.json",
-      "bytes": 4906,
+      "bytes": 2947,
       "kind": "json"
     },
     {
       "path": "scheduled-maintenance.json",
       "bytes": 2057,
       "kind": "json"
-    },
-    {
-      "path": "public/repository-data/users/68보0632/photos/brake-service.svg",
-      "bytes": 1842,
-      "kind": "photo"
-    },
-    {
-      "path": "public/repository-data/users/68보0632/receipts/receipt-brake.svg",
-      "bytes": 1128,
-      "kind": "receipt"
     },
     {
       "path": "public/repository-data/users/68보0632/photos/engine-oil.svg",
@@ -47,5 +37,5 @@
       "kind": "photo"
     }
   ],
-  "updatedAt": "2026-04-04T05:01:06.713Z"
+  "updatedAt": "2026-04-04T05:01:11.993Z"
 }
