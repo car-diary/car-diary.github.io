@@ -2,6 +2,28 @@
   "vehicleId": "68보0632",
   "items": [
     {
+      "id": "schedule_063e89518cfe4bfa",
+      "title": "브레이크오일 교환",
+      "items": [
+        {
+          "code": "engine-oil:브레이크오일 교환",
+          "categoryKey": "engine-oil",
+          "label": "브레이크오일 교환",
+          "isCustom": false
+        }
+      ],
+      "scheduledDate": null,
+      "targetOdometerKm": 120000,
+      "expectedCost": null,
+      "priority": "normal",
+      "notes": "",
+      "status": "pending",
+      "createdAt": "2026-04-04T08:56:09.131Z",
+      "updatedAt": "2026-04-04T08:56:09.131Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    },
+    {
       "id": "schedule_e4e1f6e755584f1a",
       "title": "자동차점검",
       "items": [
@@ -146,5 +168,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T08:55:40.351Z"
+  "updatedAt": "2026-04-04T08:56:09.131Z"
 }
