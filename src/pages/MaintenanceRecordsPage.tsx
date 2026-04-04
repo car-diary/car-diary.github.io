@@ -44,6 +44,7 @@ const MaintenanceRecordEditor = ({
     readMaintenanceRecordDraft(vehicleId, currentOdometerKm),
   )
   const [formError, setFormError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     persistMaintenanceRecordDraft(draft)
@@ -97,10 +98,13 @@ const MaintenanceRecordEditor = ({
     }
 
     try {
+      setIsSubmitting(true)
       await saveMaintenanceRecord(draft)
       resetDraft()
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '저장에 실패했습니다.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -265,7 +269,7 @@ const MaintenanceRecordEditor = ({
                   accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={(event) => handleFileAppend('newPhotos', event)}
-                  disabled={isReadOnly}
+                  disabled={isReadOnly || isSubmitting}
                 />
               </label>
             </Field>
@@ -280,7 +284,7 @@ const MaintenanceRecordEditor = ({
                   accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={(event) => handleFileAppend('newReceipts', event)}
-                  disabled={isReadOnly}
+                  disabled={isReadOnly || isSubmitting}
                 />
               </label>
             </Field>
@@ -301,11 +305,23 @@ const MaintenanceRecordEditor = ({
           {formError ? <p className="text-sm text-danger">{formError}</p> : null}
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="submit" className="flex-1" disabled={isReadOnly}>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={isReadOnly}
+              loading={isSubmitting}
+              loadingLabel={draft.id ? '수정 중' : '저장 중'}
+            >
               <Wrench className="h-4 w-4" />
               {draft.id ? '수정 저장' : '정비내역 저장'}
             </Button>
-            <Button type="button" variant="secondary" className="flex-1" onClick={resetDraft}>
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={resetDraft}
+              disabled={isSubmitting}
+            >
               입력 초기화
             </Button>
           </div>

@@ -90,6 +90,9 @@ const ScheduledMaintenanceEditor = ({
   )
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deletingScheduleId, setDeletingScheduleId] = useState<string | null>(null)
+  const [completingScheduleId, setCompletingScheduleId] = useState<string | null>(null)
 
   useEffect(() => {
     writeVehicleScopedDraft(LOCAL_STORAGE_KEYS.scheduleDraft, draft.vehicleId, draft)
@@ -121,10 +124,13 @@ const ScheduledMaintenanceEditor = ({
       return
     }
     try {
+      setIsSubmitting(true)
       await saveScheduledMaintenance(draft)
       resetDraft()
     } catch (error) {
       setFormError(error instanceof Error ? error.message : '저장에 실패했습니다.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -164,7 +170,7 @@ const ScheduledMaintenanceEditor = ({
           <SectionTitle
             title={draft.id ? '정비예정 수정' : '정비예정 추가'}
             action={
-              <Button variant="ghost" onClick={resetDraft}>
+              <Button variant="ghost" onClick={resetDraft} disabled={isSubmitting}>
                 <RotateCcw className="h-4 w-4" />
                 새로 작성
               </Button>
@@ -281,11 +287,23 @@ const ScheduledMaintenanceEditor = ({
 
             {formError ? <p className="text-sm text-danger">{formError}</p> : null}
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button type="submit" className="flex-1" disabled={isReadOnly}>
+              <Button
+                type="submit"
+                className="flex-1"
+                disabled={isReadOnly}
+                loading={isSubmitting}
+                loadingLabel={draft.id ? '수정 중' : '저장 중'}
+              >
                 <CalendarClock className="h-4 w-4" />
                 {draft.id ? '정비예정 수정' : '정비예정 저장'}
               </Button>
-              <Button type="button" variant="secondary" onClick={resetDraft} className="flex-1">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={resetDraft}
+                className="flex-1"
+                disabled={isSubmitting}
+              >
                 입력 초기화
               </Button>
             </div>
@@ -394,8 +412,17 @@ const ScheduledMaintenanceEditor = ({
                           </Button>
                           <Button
                             variant="ghost"
-                            onClick={() => markScheduleCompleted(schedule.id, 'manual-complete')}
-                            disabled={isReadOnly}
+                            onClick={async () => {
+                              try {
+                                setCompletingScheduleId(schedule.id)
+                                await markScheduleCompleted(schedule.id, 'manual-complete')
+                              } finally {
+                                setCompletingScheduleId(null)
+                              }
+                            }}
+                            disabled={isReadOnly || deletingScheduleId !== null}
+                            loading={completingScheduleId === schedule.id}
+                            loadingLabel="처리 중"
                           >
                             완료만 표시
                           </Button>
@@ -404,7 +431,11 @@ const ScheduledMaintenanceEditor = ({
                       <Button
                         variant="danger"
                         onClick={() => setDeleteTargetId(schedule.id)}
-                        disabled={isReadOnly}
+                        disabled={
+                          isReadOnly ||
+                          deletingScheduleId !== null ||
+                          completingScheduleId !== null
+                        }
                       >
                         <Trash2 className="h-4 w-4" />
                         삭제
@@ -430,13 +461,25 @@ const ScheduledMaintenanceEditor = ({
             className="flex-1"
             onClick={async () => {
               if (!deleteTargetId) return
-              await deleteScheduledMaintenance(deleteTargetId)
-              setDeleteTargetId(null)
+              try {
+                setDeletingScheduleId(deleteTargetId)
+                await deleteScheduledMaintenance(deleteTargetId)
+                setDeleteTargetId(null)
+              } finally {
+                setDeletingScheduleId(null)
+              }
             }}
+            loading={deletingScheduleId === deleteTargetId}
+            loadingLabel="삭제 중"
           >
             삭제 확인
           </Button>
-          <Button variant="secondary" className="flex-1" onClick={() => setDeleteTargetId(null)}>
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => setDeleteTargetId(null)}
+            disabled={deletingScheduleId !== null}
+          >
             취소
           </Button>
         </div>

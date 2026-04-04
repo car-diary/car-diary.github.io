@@ -38,6 +38,7 @@ export const HomePage = () => {
   const [odometerNote, setOdometerNote] = useState('')
   const [odometerError, setOdometerError] = useState<string | null>(null)
   const [isOdometerModalOpen, setIsOdometerModalOpen] = useState(false)
+  const [isUpdatingOdometer, setIsUpdatingOdometer] = useState(false)
 
   if (!userBundle || !dashboardSummary) {
     return null
@@ -71,6 +72,7 @@ export const HomePage = () => {
 
     try {
       setOdometerError(null)
+      setIsUpdatingOdometer(true)
       await updateOdometer({
         odometerKm: numericValue,
         note: odometerNote,
@@ -81,6 +83,8 @@ export const HomePage = () => {
       setOdometerError(
         error instanceof Error ? error.message : '주행거리 저장에 실패했습니다.',
       )
+    } finally {
+      setIsUpdatingOdometer(false)
     }
   }
 
@@ -318,13 +322,19 @@ export const HomePage = () => {
           </Field>
           {odometerError ? <p className="text-sm text-danger">{odometerError}</p> : null}
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="submit" className="flex-1">
+            <Button
+              type="submit"
+              className="flex-1"
+              loading={isUpdatingOdometer}
+              loadingLabel="갱신 중"
+            >
               저장
             </Button>
             <Button
               type="button"
               variant="secondary"
               className="flex-1"
+              disabled={isUpdatingOdometer}
               onClick={() => setIsOdometerModalOpen(false)}
             >
               취소

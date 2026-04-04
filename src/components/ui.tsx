@@ -1,4 +1,4 @@
-import { X, type LucideIcon } from 'lucide-react'
+import { LoaderCircle, X, type LucideIcon } from 'lucide-react'
 import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 
 import { cn } from '../lib/utils'
@@ -39,10 +39,16 @@ export const Button = ({
   className,
   variant = 'primary',
   size = 'md',
+  loading = false,
+  loadingLabel,
+  children,
+  disabled,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md'
+  loading?: boolean
+  loadingLabel?: ReactNode
 }) => (
   <button
     className={cn(
@@ -57,8 +63,13 @@ export const Button = ({
       size === 'sm' ? 'h-9 text-sm' : 'h-11 text-sm',
       className,
     )}
+    aria-busy={loading || undefined}
+    disabled={disabled || loading}
     {...props}
-  />
+  >
+    {loading ? <Spinner className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} /> : null}
+    {loading && loadingLabel ? loadingLabel : children}
+  </button>
 )
 
 export const IconButton = ({
@@ -187,6 +198,10 @@ export const ProgressBar = ({
   </div>
 )
 
+export const Spinner = ({ className }: { className?: string }) => (
+  <LoaderCircle className={cn('h-4 w-4 animate-spin', className)} />
+)
+
 export const EmptyState = ({
   title,
   description,
@@ -235,9 +250,10 @@ export const Modal = ({
 
 export const LoadingOverlay = ({ visible }: { visible: boolean }) =>
   visible ? (
-    <div className="fixed inset-0 z-40 grid place-items-center bg-slate-950/35 backdrop-blur-sm">
-      <div className="rounded-3xl border border-border bg-panel px-5 py-4 text-sm text-text shadow-panel">
-        저장 중입니다...
+    <div className="pointer-events-none fixed inset-x-0 top-4 z-40 flex justify-center px-4">
+      <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-panel/92 px-4 py-2 text-sm text-text shadow-panel backdrop-blur-md">
+        <Spinner className="h-4 w-4 text-accentSoft" />
+        처리 중
       </div>
     </div>
   ) : null

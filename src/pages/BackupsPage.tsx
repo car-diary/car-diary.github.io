@@ -9,6 +9,7 @@ const normalizeCsvValue = (value: string | number) => `"${String(value).replaceA
 export const BackupsPage = () => {
   const { exportData, importData, userBundle, session } = useApp()
   const [status, setStatus] = useState<string | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
   const importInputRef = useRef<HTMLInputElement | null>(null)
 
   if (!userBundle || !session) {
@@ -68,12 +69,14 @@ export const BackupsPage = () => {
     const file = event.target.files?.[0]
     if (!file) return
     try {
+      setIsImporting(true)
       const payload = JSON.parse(await file.text())
       await importData(payload)
       setStatus('JSON 백업 데이터를 현재 계정으로 가져왔습니다.')
     } catch (error) {
       setStatus(error instanceof Error ? error.message : '가져오기에 실패했습니다.')
     } finally {
+      setIsImporting(false)
       event.target.value = ''
     }
   }
@@ -108,7 +111,13 @@ export const BackupsPage = () => {
             onChange={handleImportFile}
           />
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <Button onClick={() => importInputRef.current?.click()}>전체 JSON import</Button>
+            <Button
+              onClick={() => importInputRef.current?.click()}
+              loading={isImporting}
+              loadingLabel="가져오는 중"
+            >
+              전체 JSON import
+            </Button>
             <Button variant="ghost" onClick={() => setStatus(null)}>
               상태 메시지 지우기
             </Button>

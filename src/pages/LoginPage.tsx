@@ -61,8 +61,14 @@ export const LoginPage = () => {
                 autoFocus
               />
             </Field>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? '접속 중...' : '들어가기'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+              loading={isSubmitting}
+              loadingLabel="접속 중"
+            >
+              들어가기
             </Button>
           </form>
         </Card>

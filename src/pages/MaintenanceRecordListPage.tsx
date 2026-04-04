@@ -38,6 +38,7 @@ export const MaintenanceRecordListPage = () => {
   const [maxCost, setMaxCost] = useState('')
   const [sortKey, setSortKey] = useState<RecordSortKey>('date')
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null)
 
   const records = userBundle?.maintenanceRecords.records ?? EMPTY_RECORDS
 
@@ -240,7 +241,7 @@ export const MaintenanceRecordListPage = () => {
                       <Button
                         variant="danger"
                         onClick={() => setDeleteTargetId(record.id)}
-                        disabled={isReadOnly}
+                        disabled={isReadOnly || deletingRecordId !== null}
                       >
                         <Trash2 className="h-4 w-4" />
                         삭제
@@ -297,13 +298,25 @@ export const MaintenanceRecordListPage = () => {
             className="flex-1"
             onClick={async () => {
               if (!deleteTargetId) return
-              await deleteMaintenanceRecord(deleteTargetId)
-              setDeleteTargetId(null)
+              try {
+                setDeletingRecordId(deleteTargetId)
+                await deleteMaintenanceRecord(deleteTargetId)
+                setDeleteTargetId(null)
+              } finally {
+                setDeletingRecordId(null)
+              }
             }}
+            loading={deletingRecordId === deleteTargetId}
+            loadingLabel="삭제 중"
           >
             삭제 확인
           </Button>
-          <Button variant="secondary" className="flex-1" onClick={() => setDeleteTargetId(null)}>
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => setDeleteTargetId(null)}
+            disabled={deletingRecordId !== null}
+          >
             취소
           </Button>
         </div>
