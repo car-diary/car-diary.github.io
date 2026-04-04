@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib.util
+import io
 import json
 import re
 import shutil
@@ -11,6 +13,7 @@ import traceback
 import urllib.error
 import urllib.request
 import webbrowser
+from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -18,8 +21,27 @@ from queue import Empty, Queue
 import tkinter as tk
 from tkinter import END, StringVar, Tk, messagebox, ttk
 
+sys.dont_write_bytecode = True
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
+
+def resolve_root_dir() -> Path:
+    candidates: list[Path] = []
+    if getattr(sys, "frozen", False):
+        candidates.append(Path(sys.executable).resolve().parent)
+    candidates.append(Path(__file__).resolve().parents[1])
+    candidates.append(Path.cwd())
+
+    for candidate in candidates:
+        if (
+            (candidate / "tools" / "build_allowed_users.py").exists()
+            and (candidate / "public").exists()
+        ):
+            return candidate
+
+    return candidates[0]
+
+
+ROOT_DIR = resolve_root_dir()
 SOURCE_PATH = ROOT_DIR / "tools" / "allowed_vehicle_ids.txt"
 BUILD_SCRIPT = ROOT_DIR / "tools" / "build_allowed_users.py"
 ALLOWED_USERS_PATH = ROOT_DIR / "public" / "data" / "allowed_users.json"
@@ -277,8 +299,35 @@ def run_command(command: list[str], *, check: bool = True) -> subprocess.Complet
 
 
 def run_build_allowed_users() -> str:
-    completed = run_command([sys.executable, str(BUILD_SCRIPT)])
-    return (completed.stdout + "\n" + completed.stderr).strip()
+    if not BUILD_SCRIPT.exists():
+        raise RuntimeError(f"빌드 스크립트를 찾을 수 없습니다: {BUILD_SCRIPT}")
+
+    spec = importlib.util.spec_from_file_location(
+        "car_diary_build_allowed_users",
+        BUILD_SCRIPT,
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"빌드 스크립트를 불러올 수 없습니다: {BUILD_SCRIPT}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    stdout_buffer = io.StringIO()
+    stderr_buffer = io.StringIO()
+
+    with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
+        spec.loader.exec_module(module)
+        if not hasattr(module, "main"):
+            raise RuntimeError("build_allowed_users.py 에 main() 함수가 없습니다.")
+        exit_code = int(module.main())
+
+    output = (stdout_buffer.getvalue() + "\n" + stderr_buffer.getvalue()).strip()
+    if exit_code != 0:
+        raise RuntimeError(
+            "허용 차량번호 빌드 실패\n\n"
+            + (output if output else "빌드 스크립트가 실패 코드를 반환했습니다.")
+        )
+
+    return output
 
 
 def read_head_allowed_user_ids() -> set[str]:
@@ -830,5 +879,22 @@ class CarDiaryAdminApp:
         self.root.mainloop()
 
 
+def run_self_check() -> int:
+    print(f"ROOT_DIR={ROOT_DIR}")
+    print(f"BUILD_SCRIPT={BUILD_SCRIPT}")
+    print(f"SOURCE_PATH={SOURCE_PATH}")
+    output = run_build_allowed_users()
+    if output:
+        print(output)
+    print("[done] self check passed")
+    return 0
+
+
 if __name__ == "__main__":
+    if "--self-check" in sys.argv:
+        try:
+            raise SystemExit(run_self_check())
+        except Exception as error:  # noqa: BLE001
+            print(str(error))
+            raise SystemExit(1) from error
     CarDiaryAdminApp().run()
