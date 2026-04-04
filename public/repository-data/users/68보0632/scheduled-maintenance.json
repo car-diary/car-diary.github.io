@@ -2,28 +2,6 @@
   "vehicleId": "68보0632",
   "items": [
     {
-      "id": "schedule_ac_filter_202604",
-      "title": "에어컨 필터 교환",
-      "items": [
-        {
-          "code": "engine-oil:에어컨 필터 교환",
-          "categoryKey": "engine-oil",
-          "label": "에어컨 필터 교환",
-          "isCustom": false
-        }
-      ],
-      "scheduledDate": "2026-04-18",
-      "targetOdometerKm": null,
-      "expectedCost": 35000,
-      "priority": "normal",
-      "notes": "봄철 꽃가루 시즌 전 교체",
-      "status": "pending",
-      "createdAt": "2026-03-10T01:00:00.000Z",
-      "updatedAt": "2026-03-10T01:00:00.000Z",
-      "completedAt": null,
-      "completedByRecordId": null
-    },
-    {
       "id": "schedule_wiper_202606",
       "title": "와이퍼 교체",
       "items": [
@@ -46,5 +24,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T07:55:01.900Z"
+  "updatedAt": "2026-04-04T07:55:08.196Z"
 }
