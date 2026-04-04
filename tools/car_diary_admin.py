@@ -30,6 +30,7 @@ REPO_ACTIONS_API = (
 )
 VEHICLE_ID_PATTERN = re.compile(r"^\d{2,3}[\uAC00-\uD7A3]\d{4}$")
 UTF8 = "utf-8"
+NO_WINDOW = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
 
 @dataclass
@@ -228,6 +229,7 @@ def run_command(command: list[str], *, check: bool = True) -> subprocess.Complet
         errors="replace",
         capture_output=True,
         check=False,
+        creationflags=NO_WINDOW,
     )
     if check and completed.returncode != 0:
         raise RuntimeError(
