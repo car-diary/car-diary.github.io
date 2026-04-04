@@ -22,9 +22,49 @@ import {
   buildRawPublicUrl,
   deleteRepositoryFile,
   readPublicJson,
+  readRepositoryJson,
   uploadRepositoryBlob,
   writeRepositoryJson,
 } from './githubApi'
+
+const getMaintenanceRecordedAt = (date: string) => {
+  const timestamp = Date.parse(`${date}T12:00:00.000Z`)
+  return Number.isFinite(timestamp) ? timestamp : 0
+}
+
+const deriveCurrentOdometerKm = (
+  odometerHistory: OdometerHistory,
+  maintenanceRecords: MaintenanceRecordsDocument,
+  fallbackOdometerKm: number,
+) => {
+  const latestEntry = odometerHistory.entries.reduce<OdometerHistory['entries'][number] | null>(
+    (latest, entry) => {
+      if (!latest) {
+        return entry
+      }
+      return Date.parse(entry.recordedAt) >= Date.parse(latest.recordedAt) ? entry : latest
+    },
+    null,
+  )
+  if (latestEntry) {
+    return latestEntry.odometerKm
+  }
+
+  const latestRecord =
+    maintenanceRecords.records.reduce<MaintenanceRecordsDocument['records'][number] | null>(
+      (latest, record) => {
+        if (!latest) {
+          return record
+        }
+        return getMaintenanceRecordedAt(record.date) >= getMaintenanceRecordedAt(latest.date)
+          ? record
+          : latest
+      },
+      null,
+    )
+
+  return latestRecord?.odometerKm ?? fallbackOdometerKm
+}
 
 const createEmptyProfile = (vehicleId: string): UserProfile => {
   const now = new Date().toISOString()
@@ -94,10 +134,17 @@ const readPublicUserJson = async <T>(
   settings: AppSettings,
   vehicleId: string,
   fileName: string,
-) => readPublicJson<T>(settings, getRepositoryPath(settings.dataRootPath, vehicleId, fileName))
+) => {
+  const repositoryPath = getRepositoryPath(settings.dataRootPath, vehicleId, fileName)
+  return settings.token
+    ? readRepositoryJson<T>(settings, repositoryPath)
+    : readPublicJson<T>(settings, repositoryPath)
+}
 
 export const readAllowedUsers = async (settings: AppSettings) =>
-  readPublicJson<AllowedUserPublicEntry[]>(settings, settings.allowedUsersPath)
+  settings.token
+    ? readRepositoryJson<AllowedUserPublicEntry[]>(settings, settings.allowedUsersPath)
+    : readPublicJson<AllowedUserPublicEntry[]>(settings, settings.allowedUsersPath)
 
 export const loadUserBundle = async (
   settings: AppSettings,
@@ -120,9 +167,21 @@ export const loadUserBundle = async (
       readPublicUserJson<StorageUsageSummary>(settings, vehicleId, USER_FILES.storageSummary),
     ])
 
-  return {
-    profile,
+  const normalizedCurrentOdometerKm = deriveCurrentOdometerKm(
     odometerHistory,
+    maintenanceRecords,
+    odometerHistory.currentOdometerKm || profile.currentOdometerKm,
+  )
+
+  return {
+    profile: {
+      ...profile,
+      currentOdometerKm: normalizedCurrentOdometerKm,
+    },
+    odometerHistory: {
+      ...odometerHistory,
+      currentOdometerKm: normalizedCurrentOdometerKm,
+    },
     maintenanceRecords,
     scheduledMaintenance,
     storageSummary,

@@ -112,19 +112,43 @@ const sortOdometerEntries = (entries: OdometerHistoryEntry[]) =>
       parseISO(left.recordedAt).getTime() - parseISO(right.recordedAt).getTime(),
   )
 
+const getMaintenanceRecordedAt = (date: string) => {
+  const timestamp = Date.parse(`${date}T12:00:00.000Z`)
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : new Date().toISOString()
+}
+
+const getRecordTimelineTime = (record: Pick<MaintenanceRecord, 'date' | 'updatedAt'>) => {
+  const timestamp = Date.parse(`${record.date}T12:00:00.000Z`)
+  return Number.isFinite(timestamp) ? timestamp : parseISO(record.updatedAt).getTime()
+}
+
 const deriveCurrentOdometerKm = (
   entries: OdometerHistoryEntry[],
   records: MaintenanceRecord[],
+  fallbackOdometerKm: number,
 ) => {
-  const entryMax = entries.reduce(
-    (highest, entry) => Math.max(highest, entry.odometerKm),
-    0,
-  )
-  const recordMax = records.reduce(
-    (highest, record) => Math.max(highest, record.odometerKm),
-    0,
-  )
-  return Math.max(entryMax, recordMax)
+  const latestEntry = entries.reduce<OdometerHistoryEntry | null>((latest, entry) => {
+    if (!latest) {
+      return entry
+    }
+
+    return parseISO(entry.recordedAt).getTime() >= parseISO(latest.recordedAt).getTime()
+      ? entry
+      : latest
+  }, null)
+  if (latestEntry) {
+    return latestEntry.odometerKm
+  }
+
+  const latestRecord = records.reduce<MaintenanceRecord | null>((latest, record) => {
+    if (!latest) {
+      return record
+    }
+
+    return getRecordTimelineTime(record) >= getRecordTimelineTime(latest) ? record : latest
+  }, null)
+
+  return latestRecord?.odometerKm ?? fallbackOdometerKm
 }
 
 const matchesMaintenanceEntry = (
@@ -491,7 +515,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
           ),
           {
             id: createId('odo'),
-            recordedAt: new Date().toISOString(),
+            recordedAt: getMaintenanceRecordedAt(nextRecord.date),
             odometerKm: draft.odometerKm,
             source: 'maintenance',
             note: `${nextRecord.date} 정비 입력`,
@@ -502,6 +526,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
         const nextCurrentOdometerKm = deriveCurrentOdometerKm(
           nextOdometerEntries,
           nextRecords,
+          userBundle.profile.currentOdometerKm,
         )
 
         const nextScheduledItems = userBundle.scheduledMaintenance.items.map((item) => {
@@ -610,6 +635,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       const nextCurrentOdometerKm = deriveCurrentOdometerKm(
         nextOdometerEntries,
         nextRecords,
+        userBundle.profile.currentOdometerKm,
       )
 
       const nextBundle: UserBundle = {

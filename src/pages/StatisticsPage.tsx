@@ -166,7 +166,7 @@ export const StatisticsPage = () => {
           </div>
         </Card>
         <Card>
-          <SectionTitle title="최근 정비 스냅샷" />
+          <SectionTitle title="최근 정비" />
           <div className="mt-5 space-y-3">
             {statistics.recentItemSnapshots.map((item) => (
               <div

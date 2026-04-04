@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 
 import { useApp } from '../context/appContextStore'
-import { downloadTextFile } from '../lib/utils'
+import { downloadTextFile, readTextFile } from '../lib/utils'
 import { Button, Card, EmptyState, SectionTitle } from '../components/ui'
 
 const normalizeCsvValue = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`
@@ -27,7 +27,8 @@ export const BackupsPage = () => {
     downloadTextFile(
       `${session.vehicleId}-backup.json`,
       JSON.stringify(payload, null, 2),
-      'application/json',
+      'application/json;charset=utf-8',
+      true,
     )
     setStatus('전체 데이터를 JSON으로 내보냈습니다.')
   }
@@ -61,6 +62,7 @@ export const BackupsPage = () => {
       `${session.vehicleId}-maintenance.csv`,
       csvRows.join('\n'),
       'text/csv;charset=utf-8',
+      true,
     )
     setStatus('정비내역을 CSV로 내보냈습니다.')
   }
@@ -70,7 +72,7 @@ export const BackupsPage = () => {
     if (!file) return
     try {
       setIsImporting(true)
-      const payload = JSON.parse(await file.text())
+      const payload = JSON.parse(await readTextFile(file))
       await importData(payload)
       setStatus('JSON 백업 데이터를 현재 계정으로 가져왔습니다.')
     } catch (error) {

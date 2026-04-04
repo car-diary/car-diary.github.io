@@ -27,14 +27,31 @@ export const downloadTextFile = (
   fileName: string,
   content: string,
   contentType = 'application/json',
+  withBom = false,
 ) => {
-  const blob = new Blob([content], { type: contentType })
+  const prefix = withBom ? '\uFEFF' : ''
+  const blob = new Blob([prefix, content], { type: contentType })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
   anchor.download = fileName
   anchor.click()
   URL.revokeObjectURL(url)
+}
+
+export const readTextFile = async (file: File) => {
+  const buffer = await file.arrayBuffer()
+  const stripBom = (value: string) => value.replace(/^\uFEFF/, '')
+  const utf8Text = stripBom(new TextDecoder('utf-8').decode(buffer))
+  if (!utf8Text.includes('\uFFFD')) {
+    return utf8Text
+  }
+
+  try {
+    return stripBom(new TextDecoder('euc-kr').decode(buffer))
+  } catch {
+    return utf8Text
+  }
 }
 
 export const sum = (values: number[]) =>

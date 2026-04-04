@@ -1,4 +1,11 @@
-import { differenceInCalendarDays, format, parseISO, startOfMonth, subMonths } from 'date-fns'
+import {
+  differenceInCalendarDays,
+  endOfMonth,
+  format,
+  parseISO,
+  startOfMonth,
+  subMonths,
+} from 'date-fns'
 
 import {
   SOON_DUE_DAY_THRESHOLD,
@@ -8,12 +15,15 @@ import type {
   DashboardAlert,
   DashboardSummary,
   MonthlyTrendPoint,
+  OdometerHistoryEntry,
   StatisticsSnapshot,
   UserBundle,
 } from '../types/models'
 
 const getMonthKey = (value: string) => format(parseISO(value), 'yyyy-MM')
 const getYearKey = (value: string) => format(parseISO(value), 'yyyy')
+const getEntryTime = (entry: Pick<OdometerHistoryEntry, 'recordedAt'>) =>
+  parseISO(entry.recordedAt).getTime()
 
 export const buildDashboardSummary = (bundle: UserBundle): DashboardSummary => {
   const now = new Date()
@@ -32,6 +42,7 @@ export const buildDashboardSummary = (bundle: UserBundle): DashboardSummary => {
     .filter((item) => item.status === 'pending')
     .flatMap((item) => {
       const alerts: DashboardAlert[] = []
+
       if (
         item.targetOdometerKm !== null &&
         bundle.profile.currentOdometerKm >= item.targetOdometerKm
@@ -40,7 +51,7 @@ export const buildDashboardSummary = (bundle: UserBundle): DashboardSummary => {
           id: `${item.id}-km-over`,
           tone: 'danger',
           title: '정비 요망',
-          description: `${item.title} 목표 주행거리 도달`,
+          description: `${item.title} 목표 주행거리에 도달했습니다.`,
           scheduleId: item.id,
         })
       } else if (
@@ -55,7 +66,7 @@ export const buildDashboardSummary = (bundle: UserBundle): DashboardSummary => {
           description: `${item.title}까지 ${Math.max(
             item.targetOdometerKm - bundle.profile.currentOdometerKm,
             0,
-          )}km`,
+          )}km 남았습니다.`,
           scheduleId: item.id,
         })
       }
@@ -67,7 +78,7 @@ export const buildDashboardSummary = (bundle: UserBundle): DashboardSummary => {
             id: `${item.id}-date-over`,
             tone: 'danger',
             title: '예정일 경과',
-            description: `${item.title} ${Math.abs(dayDiff)}일 지연`,
+            description: `${item.title} 예정일이 ${Math.abs(dayDiff)}일 지났습니다.`,
             scheduleId: item.id,
           })
         } else if (dayDiff <= SOON_DUE_DAY_THRESHOLD) {
@@ -75,7 +86,7 @@ export const buildDashboardSummary = (bundle: UserBundle): DashboardSummary => {
             id: `${item.id}-date-soon`,
             tone: 'info',
             title: '곧 정비 예정',
-            description: `${item.title} ${dayDiff}일 남음`,
+            description: `${item.title} 예정일까지 ${dayDiff}일 남았습니다.`,
             scheduleId: item.id,
           })
         }
@@ -96,7 +107,39 @@ export const buildDashboardSummary = (bundle: UserBundle): DashboardSummary => {
   }
 }
 
+const getMonthlyDistanceKm = (
+  entries: OdometerHistoryEntry[],
+  monthDate: Date,
+) => {
+  const monthStart = startOfMonth(monthDate).getTime()
+  const monthEnd = endOfMonth(monthDate).getTime()
+  const entriesInMonth = entries.filter((entry) => {
+    const entryTime = getEntryTime(entry)
+    return entryTime >= monthStart && entryTime <= monthEnd
+  })
+
+  if (entriesInMonth.length === 0) {
+    return 0
+  }
+
+  const closingEntry = entriesInMonth.at(-1) ?? null
+  const previousEntry =
+    [...entries]
+      .reverse()
+      .find((entry) => getEntryTime(entry) < monthStart) ?? entriesInMonth[0] ?? null
+
+  if (!closingEntry || !previousEntry) {
+    return 0
+  }
+
+  return Math.max(closingEntry.odometerKm - previousEntry.odometerKm, 0)
+}
+
 export const buildStatisticsSnapshot = (bundle: UserBundle): StatisticsSnapshot => {
+  const sortedEntries = [...bundle.odometerHistory.entries].sort(
+    (left, right) => getEntryTime(left) - getEntryTime(right),
+  )
+
   const monthlyTrend: MonthlyTrendPoint[] = Array.from({ length: 12 }).map(
     (_, index) => {
       const month = subMonths(startOfMonth(new Date()), 11 - index)
@@ -104,17 +147,11 @@ export const buildStatisticsSnapshot = (bundle: UserBundle): StatisticsSnapshot 
       const records = bundle.maintenanceRecords.records.filter(
         (record) => getMonthKey(record.date) === key,
       )
-      const relevantEntries = bundle.odometerHistory.entries.filter(
-        (entry) => getMonthKey(entry.recordedAt) === key,
-      )
-      const distanceKm =
-        relevantEntries.length >= 2
-          ? relevantEntries.at(-1)!.odometerKm - relevantEntries[0]!.odometerKm
-          : 0
+
       return {
         month: key,
         label: format(month, 'MM월'),
-        distanceKm: Math.max(distanceKm, 0),
+        distanceKm: getMonthlyDistanceKm(sortedEntries, month),
         spend: records.reduce((total, record) => total + record.totalCost, 0),
         recordCount: records.length,
       }
@@ -174,6 +211,7 @@ export const buildStatisticsSnapshot = (bundle: UserBundle): StatisticsSnapshot 
     const lastRecord = bundle.maintenanceRecords.records.find((record) =>
       record.items.some((item) => item.label === itemLabel),
     )
+
     return {
       itemLabel,
       lastDate: lastRecord?.date ?? null,
