@@ -19,12 +19,24 @@ import {
   readMaintenanceRecordDraft,
 } from '../features/maintenanceRecords'
 import { formatKilometers } from '../lib/format'
+import { calculateTotalCost } from '../lib/validation'
 import type { MaintenanceRecordDraft } from '../types/models'
 
 const parseNumberInput = (value: string) => {
   const numericValue = Number(value)
   return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : 0
 }
+
+type NumericFieldKey = 'odometerKm' | 'partsCost' | 'laborCost' | 'totalCost'
+
+type NumericFieldState = Record<NumericFieldKey, string>
+
+const buildNumericFieldState = (draft: MaintenanceRecordDraft): NumericFieldState => ({
+  odometerKm: String(draft.odometerKm),
+  partsCost: String(draft.partsCost),
+  laborCost: String(draft.laborCost),
+  totalCost: String(draft.totalCost),
+})
 
 interface MaintenanceRecordEditorProps {
   vehicleId: string
@@ -43,6 +55,13 @@ const MaintenanceRecordEditor = ({
   const [draft, setDraft] = useState<MaintenanceRecordDraft>(() =>
     readMaintenanceRecordDraft(vehicleId, currentOdometerKm),
   )
+  const [numericFields, setNumericFields] = useState<NumericFieldState>(() =>
+    buildNumericFieldState(readMaintenanceRecordDraft(vehicleId, currentOdometerKm)),
+  )
+  const [isTotalCostManual, setIsTotalCostManual] = useState(() => {
+    const initialDraft = readMaintenanceRecordDraft(vehicleId, currentOdometerKm)
+    return initialDraft.totalCost !== calculateTotalCost(initialDraft.partsCost, initialDraft.laborCost)
+  })
   const [formError, setFormError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -53,6 +72,8 @@ const MaintenanceRecordEditor = ({
   const resetDraft = () => {
     const nextDraft = clearMaintenanceRecordDraft(vehicleId, currentOdometerKm)
     setDraft(nextDraft)
+    setNumericFields(buildNumericFieldState(nextDraft))
+    setIsTotalCostManual(false)
     setFormError(null)
   }
 
@@ -61,21 +82,46 @@ const MaintenanceRecordEditor = ({
   }
 
   const handleCostChange = (field: 'partsCost' | 'laborCost', rawValue: string) => {
+    setNumericFields((current) => {
+      const next = { ...current, [field]: rawValue }
+      if (!isTotalCostManual) {
+        const partsCost = parseNumberInput(field === 'partsCost' ? rawValue : next.partsCost)
+        const laborCost = parseNumberInput(field === 'laborCost' ? rawValue : next.laborCost)
+        next.totalCost = String(calculateTotalCost(partsCost, laborCost))
+      }
+      return next
+    })
+
     updateDraft((current) => {
       const nextValue = parseNumberInput(rawValue)
-      const previousCalculated = current.partsCost + current.laborCost
       const nextDraft = {
         ...current,
         [field]: nextValue,
       }
-      const nextCalculated = nextDraft.partsCost + nextDraft.laborCost
+      const nextCalculated = calculateTotalCost(nextDraft.partsCost, nextDraft.laborCost)
 
       return {
         ...nextDraft,
-        totalCost:
-          current.totalCost === previousCalculated ? nextCalculated : current.totalCost,
+        totalCost: isTotalCostManual ? current.totalCost : nextCalculated,
       }
     })
+  }
+
+  const handleOdometerChange = (rawValue: string) => {
+    setNumericFields((current) => ({ ...current, odometerKm: rawValue }))
+    updateDraft((current) => ({
+      ...current,
+      odometerKm: parseNumberInput(rawValue),
+    }))
+  }
+
+  const handleTotalCostChange = (rawValue: string) => {
+    setIsTotalCostManual(true)
+    setNumericFields((current) => ({ ...current, totalCost: rawValue }))
+    updateDraft((current) => ({
+      ...current,
+      totalCost: parseNumberInput(rawValue),
+    }))
   }
 
   const handleFileAppend = (
@@ -152,13 +198,8 @@ const MaintenanceRecordEditor = ({
             <Field label="주행거리">
               <Input
                 type="number"
-                value={draft.odometerKm}
-                onChange={(event) =>
-                  updateDraft((current) => ({
-                    ...current,
-                    odometerKm: parseNumberInput(event.target.value),
-                  }))
-                }
+                value={numericFields.odometerKm}
+                onChange={(event) => handleOdometerChange(event.target.value)}
               />
             </Field>
             <Field label="정비업체명">
@@ -175,27 +216,22 @@ const MaintenanceRecordEditor = ({
             <Field label="부품비">
               <Input
                 type="number"
-                value={draft.partsCost}
+                value={numericFields.partsCost}
                 onChange={(event) => handleCostChange('partsCost', event.target.value)}
               />
             </Field>
             <Field label="공임비">
               <Input
                 type="number"
-                value={draft.laborCost}
+                value={numericFields.laborCost}
                 onChange={(event) => handleCostChange('laborCost', event.target.value)}
               />
             </Field>
             <Field label="총비용">
               <Input
                 type="number"
-                value={draft.totalCost}
-                onChange={(event) =>
-                  updateDraft((current) => ({
-                    ...current,
-                    totalCost: parseNumberInput(event.target.value),
-                  }))
-                }
+                value={numericFields.totalCost}
+                onChange={(event) => handleTotalCostChange(event.target.value)}
               />
             </Field>
           </div>
