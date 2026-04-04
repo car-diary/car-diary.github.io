@@ -27,3 +27,7 @@ __pycache__/
 
 tools/build/
 tools/dist/
+CarDiaryAdmin.exe
+tools/car_diary_admin.py
+tools/build_admin_tool.bat
+tools/allowed_vehicle_ids.txt
