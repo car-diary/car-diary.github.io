@@ -85,7 +85,15 @@
       "source": "maintenance",
       "note": "2026-04-04 정비 입력",
       "relatedRecordId": "record_7db4f191f60d4ddd"
+    },
+    {
+      "id": "odo_6965caa57291451d",
+      "recordedAt": "2026-04-04T12:00:00.000Z",
+      "odometerKm": 74600,
+      "source": "maintenance",
+      "note": "2026-04-04 정비 입력",
+      "relatedRecordId": "record_1cc9e2f56c114c10"
     }
   ],
-  "updatedAt": "2026-04-04T08:06:40.207Z"
+  "updatedAt": "2026-04-04T08:27:21.359Z"
 }
