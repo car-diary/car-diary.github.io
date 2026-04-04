@@ -45,15 +45,7 @@
       "source": "manual",
       "note": "",
       "relatedRecordId": null
-    },
-    {
-      "id": "odo_13714ec7d90c4758",
-      "recordedAt": "2026-04-04T05:00:51.010Z",
-      "odometerKm": 74600,
-      "source": "maintenance",
-      "note": "2026-04-04 정비 입력",
-      "relatedRecordId": "record_88f20a1c39ab4d23"
     }
   ],
-  "updatedAt": "2026-04-04T05:00:51.010Z"
+  "updatedAt": "2026-04-04T05:01:04.744Z"
 }
