@@ -1,8 +1,8 @@
 {
   "vehicleId": "68보0632",
   "limitBytes": 314572800,
-  "usedBytes": 13052,
-  "jsonBytes": 13052,
+  "usedBytes": 13250,
+  "jsonBytes": 13250,
   "attachmentBytes": 0,
   "percentUsed": 0,
   "fileBreakdown": [
@@ -13,7 +13,7 @@
     },
     {
       "path": "odometer-history.json",
-      "bytes": 2612,
+      "bytes": 2810,
       "kind": "json"
     },
     {
@@ -27,5 +27,5 @@
       "kind": "json"
     }
   ],
-  "updatedAt": "2026-04-04T09:26:02.468Z"
+  "updatedAt": "2026-04-04T10:43:50.288Z"
 }
