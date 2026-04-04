@@ -357,6 +357,15 @@ const ScheduledMaintenanceEditor = ({
                         </Badge>
                       </div>
                       <p className="mt-3 font-semibold text-text">{schedule.title}</p>
+                      {schedule.items.length > 0 ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {schedule.items.map((item) => (
+                            <Badge key={`${schedule.id}-${item.code}`} tone="info">
+                              {item.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : null}
                       <p className="mt-1 text-sm text-muted">
                         예정일 {formatShortDate(schedule.scheduledDate)} / 목표주행거리{' '}
                         {schedule.targetOdometerKm === null

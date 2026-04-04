@@ -84,12 +84,12 @@
     },
     {
       "id": "schedule_063e89518cfe4bfa",
-      "title": "브레이크오일 교환",
+      "title": "브레이크액 교환",
       "items": [
         {
           "code": "engine-oil:브레이크오일 교환",
           "categoryKey": "engine-oil",
-          "label": "브레이크오일 교환",
+          "label": "브레이크액 교환",
           "isCustom": false
         }
       ],

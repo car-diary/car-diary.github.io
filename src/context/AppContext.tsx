@@ -211,6 +211,21 @@ const tagAttachmentsToItems = (
     relatedItemCodes,
   }))
 
+const buildScheduleTitle = (
+  selectedItemCodes: string[],
+  customTitle: string,
+) => {
+  const normalizedTitle = customTitle.trim()
+  const generatedTitle = mapCodesToItems(selectedItemCodes, normalizedTitle)
+    .map((item) => item.label)
+    .join(', ')
+
+  return {
+    normalizedTitle,
+    generatedTitle,
+  }
+}
+
 export const AppProvider = ({ children }: PropsWithChildren) => {
   const [settings, setSettings] = useState<AppSettings>(readLocalSettings)
   const [session, setSession] = useState<SessionState | null>(readLocalSession)
@@ -742,12 +757,20 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       const existingSchedule = userBundle.scheduledMaintenance.items.find(
         (item) => item.id === draft.id,
       )
-      const normalizedTitle = draft.title.trim()
+      const { normalizedTitle, generatedTitle } = buildScheduleTitle(
+        draft.selectedItemCodes,
+        draft.title,
+      )
+      const previousGeneratedTitle = existingSchedule
+        ? existingSchedule.items.map((item) => item.label).join(', ')
+        : ''
+      const shouldFollowSelectedItems =
+        normalizedTitle === '' ||
+        (existingSchedule !== undefined &&
+          normalizedTitle === existingSchedule.title &&
+          existingSchedule.title === previousGeneratedTitle)
       const resolvedTitle =
-        normalizedTitle ||
-        mapCodesToItems(draft.selectedItemCodes, draft.title)
-          .map((item) => item.label)
-          .join(', ')
+        shouldFollowSelectedItems && generatedTitle ? generatedTitle : normalizedTitle
 
       const nextItem: ScheduledMaintenance = {
         id: draft.id ?? createId('schedule'),

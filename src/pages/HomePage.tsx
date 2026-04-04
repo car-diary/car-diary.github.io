@@ -261,6 +261,11 @@ export const HomePage = () => {
                 <div key={item.id} className="rounded-2xl border border-border bg-panelAlt p-4">
                   <div className="space-y-2">
                     <p className="font-semibold">{item.title}</p>
+                    {item.items.length > 0 ? (
+                      <p className="text-sm text-muted">
+                        {item.items.map((maintenanceItem) => maintenanceItem.label).join(' · ')}
+                      </p>
+                    ) : null}
                     {item.scheduledDate ? (
                       <p className="text-sm text-muted">
                         예정일 {formatShortDate(item.scheduledDate)} ·{' '}

@@ -7,20 +7,31 @@ export interface MaintenanceCategory {
   }[]
 }
 
+type MaintenanceItemDefinition =
+  | string
+  | {
+      code: string
+      label: string
+    }
+
 const createItemCode = (categoryKey: string, label: string) =>
   `${categoryKey}:${label}`
 
 const createCategory = (
   key: string,
   label: string,
-  itemLabels: string[],
+  itemLabels: MaintenanceItemDefinition[],
 ): MaintenanceCategory => ({
   key,
   label,
-  items: itemLabels.map((itemLabel) => ({
-    code: createItemCode(key, itemLabel),
-    label: itemLabel,
-  })),
+  items: itemLabels.map((itemLabel) =>
+    typeof itemLabel === 'string'
+      ? {
+          code: createItemCode(key, itemLabel),
+          label: itemLabel,
+        }
+      : itemLabel,
+  ),
 })
 
 export const MAINTENANCE_CATEGORIES: MaintenanceCategory[] = [
@@ -36,7 +47,10 @@ export const MAINTENANCE_CATEGORIES: MaintenanceCategory[] = [
     '미션오일 보충',
     '디퍼런셜오일 교환',
     '파워스티어링 오일 교환',
-    '브레이크오일 교환',
+    {
+      code: createItemCode('engine-oil', '브레이크오일 교환'),
+      label: '브레이크액 교환',
+    },
     '냉각수 교환',
     '냉각수 보충',
     '냉각수 리저버 교체',
