@@ -13,13 +13,13 @@
         }
       ],
       "scheduledDate": null,
-      "targetOdometerKm": 149999,
+      "targetOdometerKm": 150000,
       "expectedCost": null,
       "priority": "normal",
       "notes": "",
       "status": "pending",
       "createdAt": "2026-04-04T08:57:46.203Z",
-      "updatedAt": "2026-04-04T08:57:46.203Z",
+      "updatedAt": "2026-04-04T08:57:56.779Z",
       "completedAt": null,
       "completedByRecordId": null
     },
@@ -234,5 +234,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T08:57:46.203Z"
+  "updatedAt": "2026-04-04T08:57:56.779Z"
 }
