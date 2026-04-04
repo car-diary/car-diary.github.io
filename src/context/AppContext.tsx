@@ -151,6 +151,48 @@ const deriveCurrentOdometerKm = (
   return latestRecord?.odometerKm ?? fallbackOdometerKm
 }
 
+const normalizeUserBundle = (
+  bundle: Pick<
+    UserBundle,
+    'profile' | 'odometerHistory' | 'maintenanceRecords' | 'scheduledMaintenance'
+  >,
+  storageLimitBytes: number,
+): UserBundle => {
+  const normalizedCurrentOdometerKm = deriveCurrentOdometerKm(
+    bundle.odometerHistory.entries,
+    bundle.maintenanceRecords.records,
+    bundle.odometerHistory.currentOdometerKm || bundle.profile.currentOdometerKm,
+  )
+
+  return {
+    profile: {
+      ...bundle.profile,
+      currentOdometerKm: normalizedCurrentOdometerKm,
+    },
+    odometerHistory: {
+      ...bundle.odometerHistory,
+      currentOdometerKm: normalizedCurrentOdometerKm,
+    },
+    maintenanceRecords: bundle.maintenanceRecords,
+    scheduledMaintenance: bundle.scheduledMaintenance,
+    storageSummary: calculateStorageUsageSummary(
+      {
+        profile: {
+          ...bundle.profile,
+          currentOdometerKm: normalizedCurrentOdometerKm,
+        },
+        odometerHistory: {
+          ...bundle.odometerHistory,
+          currentOdometerKm: normalizedCurrentOdometerKm,
+        },
+        maintenanceRecords: bundle.maintenanceRecords,
+        scheduledMaintenance: bundle.scheduledMaintenance,
+      },
+      storageLimitBytes,
+    ),
+  }
+}
+
 const matchesMaintenanceEntry = (
   entry: OdometerHistoryEntry,
   record: Pick<MaintenanceRecord, 'id' | 'date' | 'odometerKm'>,
@@ -327,18 +369,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
   }
 
   const commitBundle = async (nextBundle: UserBundle, messagePrefix: string) => {
-    const recalculated = {
-      ...nextBundle,
-      storageSummary: calculateStorageUsageSummary(
-        {
-          profile: nextBundle.profile,
-          odometerHistory: nextBundle.odometerHistory,
-          maintenanceRecords: nextBundle.maintenanceRecords,
-          scheduledMaintenance: nextBundle.scheduledMaintenance,
-        },
-        settings.storageLimitBytes,
-      ),
-    }
+    const recalculated = normalizeUserBundle(nextBundle, settings.storageLimitBytes)
 
     if (recalculated.storageSummary.usedBytes > settings.storageLimitBytes) {
       throw new Error('저장공간 300MB를 초과하여 저장할 수 없습니다.')
@@ -711,16 +742,21 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
       const existingSchedule = userBundle.scheduledMaintenance.items.find(
         (item) => item.id === draft.id,
       )
+      const normalizedTitle = draft.title.trim()
+      const resolvedTitle =
+        normalizedTitle ||
+        mapCodesToItems(draft.selectedItemCodes, draft.title)
+          .map((item) => item.label)
+          .join(', ')
 
       const nextItem: ScheduledMaintenance = {
         id: draft.id ?? createId('schedule'),
-        title: draft.title.trim(),
-        items: mapCodesToItems(draft.selectedItemCodes, draft.title),
+        title: resolvedTitle,
+        items: mapCodesToItems(draft.selectedItemCodes, normalizedTitle),
         scheduledDate: draft.scheduledDate || null,
-        targetOdometerKm: draft.targetOdometerKm
-          ? Number(draft.targetOdometerKm)
-          : null,
-        expectedCost: draft.expectedCost ? Number(draft.expectedCost) : null,
+        targetOdometerKm:
+          draft.targetOdometerKm.trim() === '' ? null : Number(draft.targetOdometerKm),
+        expectedCost: draft.expectedCost.trim() === '' ? null : Number(draft.expectedCost),
         priority: draft.priority,
         notes: draft.notes.trim(),
         status: existingSchedule?.status ?? 'pending',

@@ -207,17 +207,20 @@ export const buildStatisticsSnapshot = (bundle: UserBundle): StatisticsSnapshot 
 
   const topSpendItems = spendingByItem.slice(0, 5)
 
-  const recentItemSnapshots = [...recordCountByItem.keys()].slice(0, 6).map((itemLabel) => {
-    const lastRecord = bundle.maintenanceRecords.records.find((record) =>
-      record.items.some((item) => item.label === itemLabel),
-    )
+  const recentItemSnapshots = [...recordCountByItem.keys()]
+    .map((itemLabel) => {
+      const lastRecord = bundle.maintenanceRecords.records.find((record) =>
+        record.items.some((item) => item.label === itemLabel),
+      )
 
-    return {
-      itemLabel,
-      lastDate: lastRecord?.date ?? null,
-      lastOdometerKm: lastRecord?.odometerKm ?? null,
-    }
-  })
+      return {
+        itemLabel,
+        lastDate: lastRecord?.date ?? null,
+        lastOdometerKm: lastRecord?.odometerKm ?? null,
+      }
+    })
+    .sort((left, right) => (right.lastDate ?? '').localeCompare(left.lastDate ?? ''))
+    .slice(0, 6)
 
   const totalDistance = monthlyTrend.reduce((total, point) => total + point.distanceKm, 0)
   const totalSpend = monthlyTrend.reduce((total, point) => total + point.spend, 0)

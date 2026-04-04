@@ -47,10 +47,9 @@ const buildDraftFromSchedule = (
   title: schedule.title,
   selectedItemCodes: schedule.items.map((item) => item.code),
   scheduledDate: schedule.scheduledDate ?? '',
-  targetOdometerKm: schedule.targetOdometerKm
-    ? String(schedule.targetOdometerKm)
-    : '',
-  expectedCost: schedule.expectedCost ? String(schedule.expectedCost) : '',
+  targetOdometerKm:
+    schedule.targetOdometerKm === null ? '' : String(schedule.targetOdometerKm),
+  expectedCost: schedule.expectedCost === null ? '' : String(schedule.expectedCost),
   priority: schedule.priority,
   notes: schedule.notes,
 })
@@ -360,11 +359,13 @@ const ScheduledMaintenanceEditor = ({
                       <p className="mt-3 font-semibold text-text">{schedule.title}</p>
                       <p className="mt-1 text-sm text-muted">
                         예정일 {formatShortDate(schedule.scheduledDate)} / 목표주행거리{' '}
-                        {schedule.targetOdometerKm
-                          ? formatKilometers(schedule.targetOdometerKm)
-                          : '-'}{' '}
+                        {schedule.targetOdometerKm === null
+                          ? '-'
+                          : formatKilometers(schedule.targetOdometerKm)}{' '}
                         / 예상비용{' '}
-                        {schedule.expectedCost ? formatCurrency(schedule.expectedCost) : '-'}
+                        {schedule.expectedCost === null
+                          ? '-'
+                          : formatCurrency(schedule.expectedCost)}
                       </p>
                       {schedule.notes ? (
                         <p className="mt-2 text-sm leading-6 text-muted">{schedule.notes}</p>

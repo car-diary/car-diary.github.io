@@ -58,12 +58,17 @@ export const HomePage = () => {
 
   const openOdometerModal = () => {
     setOdometerValue(String(userBundle.profile.currentOdometerKm))
+    setOdometerNote('')
     setOdometerError(null)
     setIsOdometerModalOpen(true)
   }
 
   const handleOdometerSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!odometerValue.trim()) {
+      setOdometerError('주행거리를 입력해 주세요.')
+      return
+    }
     const numericValue = Number(odometerValue)
     if (!Number.isFinite(numericValue) || numericValue < 0) {
       setOdometerError('주행거리를 확인하세요.')

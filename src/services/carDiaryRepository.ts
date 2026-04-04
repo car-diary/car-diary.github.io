@@ -14,13 +14,13 @@ import type {
   MaintenanceRecordsDocument,
   OdometerHistory,
   ScheduledMaintenanceDocument,
-  StorageUsageSummary,
   UserBundle,
   UserProfile,
 } from '../types/models'
 import {
   buildRawPublicUrl,
   deleteRepositoryFile,
+  GitHubApiError,
   readPublicJson,
   readRepositoryJson,
   uploadRepositoryBlob,
@@ -136,21 +136,41 @@ const readPublicUserJson = async <T>(
   fileName: string,
 ) => {
   const repositoryPath = getRepositoryPath(settings.dataRootPath, vehicleId, fileName)
-  return settings.token
-    ? readRepositoryJson<T>(settings, repositoryPath)
-    : readPublicJson<T>(settings, repositoryPath)
+  if (!settings.token) {
+    return readPublicJson<T>(settings, repositoryPath)
+  }
+
+  try {
+    return await readRepositoryJson<T>(settings, repositoryPath)
+  } catch (error) {
+    if (error instanceof GitHubApiError && error.code === 'not_found') {
+      throw error
+    }
+
+    return readPublicJson<T>(settings, repositoryPath)
+  }
 }
 
 export const readAllowedUsers = async (settings: AppSettings) =>
-  settings.token
-    ? readRepositoryJson<AllowedUserPublicEntry[]>(settings, settings.allowedUsersPath)
-    : readPublicJson<AllowedUserPublicEntry[]>(settings, settings.allowedUsersPath)
+  !settings.token
+    ? readPublicJson<AllowedUserPublicEntry[]>(settings, settings.allowedUsersPath)
+    : readRepositoryJson<AllowedUserPublicEntry[]>(settings, settings.allowedUsersPath).catch(
+        (error) => {
+          if (error instanceof GitHubApiError && error.code === 'not_found') {
+            throw error
+          }
+          return readPublicJson<AllowedUserPublicEntry[]>(
+            settings,
+            settings.allowedUsersPath,
+          )
+        },
+      )
 
 export const loadUserBundle = async (
   settings: AppSettings,
   vehicleId: string,
 ): Promise<UserBundle> => {
-  const [profile, odometerHistory, maintenanceRecords, scheduledMaintenance, storageSummary] =
+  const [profile, odometerHistory, maintenanceRecords, scheduledMaintenance] =
     await Promise.all([
       readPublicUserJson<UserProfile>(settings, vehicleId, USER_FILES.profile),
       readPublicUserJson<OdometerHistory>(settings, vehicleId, USER_FILES.odometerHistory),
@@ -164,7 +184,6 @@ export const loadUserBundle = async (
         vehicleId,
         USER_FILES.scheduledMaintenance,
       ),
-      readPublicUserJson<StorageUsageSummary>(settings, vehicleId, USER_FILES.storageSummary),
     ])
 
   const normalizedCurrentOdometerKm = deriveCurrentOdometerKm(
@@ -173,7 +192,7 @@ export const loadUserBundle = async (
     odometerHistory.currentOdometerKm || profile.currentOdometerKm,
   )
 
-  return {
+  const normalizedBundle = {
     profile: {
       ...profile,
       currentOdometerKm: normalizedCurrentOdometerKm,
@@ -184,7 +203,14 @@ export const loadUserBundle = async (
     },
     maintenanceRecords,
     scheduledMaintenance,
-    storageSummary,
+  }
+
+  return {
+    ...normalizedBundle,
+    storageSummary: calculateStorageUsageSummary(
+      normalizedBundle,
+      settings.storageLimitBytes,
+    ),
   }
 }
 
