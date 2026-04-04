@@ -1,8 +1,8 @@
 {
   "vehicleId": "68보0632",
   "limitBytes": 314572800,
-  "usedBytes": 12146,
-  "jsonBytes": 12146,
+  "usedBytes": 12108,
+  "jsonBytes": 12108,
   "attachmentBytes": 0,
   "percentUsed": 0,
   "fileBreakdown": [
@@ -23,9 +23,9 @@
     },
     {
       "path": "scheduled-maintenance.json",
-      "bytes": 6812,
+      "bytes": 6774,
       "kind": "json"
     }
   ],
-  "updatedAt": "2026-04-04T09:23:18.024Z"
+  "updatedAt": "2026-04-04T09:25:16.072Z"
 }
