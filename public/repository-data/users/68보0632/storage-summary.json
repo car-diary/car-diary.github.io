@@ -1,9 +1,9 @@
 {
   "vehicleId": "68보0632",
   "limitBytes": 314572800,
-  "usedBytes": 6855,
-  "jsonBytes": 5133,
-  "attachmentBytes": 1722,
+  "usedBytes": 3887,
+  "jsonBytes": 3887,
+  "attachmentBytes": 0,
   "percentUsed": 0,
   "fileBreakdown": [
     {
@@ -18,19 +18,14 @@
     },
     {
       "path": "maintenance-records.json",
-      "bytes": 1336,
+      "bytes": 90,
       "kind": "json"
     },
     {
       "path": "scheduled-maintenance.json",
       "bytes": 2057,
       "kind": "json"
-    },
-    {
-      "path": "public/repository-data/users/68보0632/photos/battery-replacement.svg",
-      "bytes": 1722,
-      "kind": "photo"
     }
   ],
-  "updatedAt": "2026-04-04T05:01:18.736Z"
+  "updatedAt": "2026-04-04T05:01:27.844Z"
 }
