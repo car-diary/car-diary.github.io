@@ -1,8 +1,8 @@
 {
   "vehicleId": "68보0632",
   "limitBytes": 314572800,
-  "usedBytes": 3488,
-  "jsonBytes": 3488,
+  "usedBytes": 4454,
+  "jsonBytes": 4454,
   "attachmentBytes": 0,
   "percentUsed": 0,
   "fileBreakdown": [
@@ -13,12 +13,12 @@
     },
     {
       "path": "odometer-history.json",
-      "bytes": 2116,
+      "bytes": 2364,
       "kind": "json"
     },
     {
       "path": "maintenance-records.json",
-      "bytes": 818,
+      "bytes": 1536,
       "kind": "json"
     },
     {
@@ -27,5 +27,5 @@
       "kind": "json"
     }
   ],
-  "updatedAt": "2026-04-04T08:05:51.925Z"
+  "updatedAt": "2026-04-04T08:06:40.207Z"
 }
