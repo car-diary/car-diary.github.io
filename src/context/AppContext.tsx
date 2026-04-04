@@ -97,6 +97,7 @@ const readLocalSettings = (): AppSettings => {
     ...DEFAULT_APP_SETTINGS,
     ...parsed,
     token: parsed.token?.trim() ? parsed.token : DEFAULT_APP_SETTINGS.token,
+    theme: parsed.theme === 'light' ? 'light' : 'dark',
   }
 }
 
@@ -210,6 +211,10 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     persistSettings(settings)
   }, [settings])
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = settings.theme
+  }, [settings.theme])
+
   useEffect(
     () => () => {
       toastTimeouts.current.forEach((timeoutId) => window.clearTimeout(timeoutId))
@@ -256,7 +261,16 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     return () => {
       cancelled = true
     }
-  }, [settings, session?.vehicleId])
+  }, [
+    settings.allowedUsersPath,
+    settings.branch,
+    settings.dataRootPath,
+    settings.preferLocalPublicFiles,
+    settings.repoName,
+    settings.repoOwner,
+    settings.token,
+    session?.vehicleId,
+  ])
 
   const saveSettings = (nextSettings: Partial<AppSettings>) => {
     setSettings((current) => {

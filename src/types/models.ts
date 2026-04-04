@@ -30,7 +30,7 @@ export interface AppSettings {
   allowedUsersPath: string
   token: string
   storageLimitBytes: number
-  theme: 'dark'
+  theme: 'dark' | 'light'
   preferLocalPublicFiles: boolean
 }
 

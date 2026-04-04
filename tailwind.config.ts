@@ -5,23 +5,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#090d14',
-        panel: '#101722',
-        panelAlt: '#162130',
-        accent: '#6cb7ff',
-        accentSoft: '#8bd4ff',
-        success: '#49d39a',
-        warn: '#f4ba53',
-        danger: '#ff7d7d',
-        text: '#edf4ff',
-        muted: '#9ba7ba',
-        border: '#223246',
+        bg: 'rgb(var(--bg) / <alpha-value>)',
+        panel: 'rgb(var(--panel) / <alpha-value>)',
+        panelAlt: 'rgb(var(--panel-alt) / <alpha-value>)',
+        accent: 'rgb(var(--accent) / <alpha-value>)',
+        accentSoft: 'rgb(var(--accent-soft) / <alpha-value>)',
+        success: 'rgb(var(--success) / <alpha-value>)',
+        warn: 'rgb(var(--warn) / <alpha-value>)',
+        danger: 'rgb(var(--danger) / <alpha-value>)',
+        text: 'rgb(var(--text) / <alpha-value>)',
+        muted: 'rgb(var(--muted) / <alpha-value>)',
+        border: 'rgb(var(--border) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Manrope', 'Noto Sans KR', 'sans-serif'],
       },
       boxShadow: {
-        panel: '0 20px 60px rgba(0, 0, 0, 0.28)',
+        panel: 'var(--shadow-panel)',
       },
       backgroundImage: {
         'grid-dark':

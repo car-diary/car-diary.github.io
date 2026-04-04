@@ -86,7 +86,7 @@ export const HomePage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[2rem] border border-accentSoft/20 bg-[radial-gradient(circle_at_top_right,rgba(201,233,255,0.18),transparent_34%),linear-gradient(135deg,#131a23_0%,#0d1118_100%)] px-5 py-6">
+      <div className="surface-hero rounded-[2rem] border border-accentSoft/20 px-5 py-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accentSoft">
@@ -96,7 +96,7 @@ export const HomePage = () => {
               {userBundle.profile.vehicleId}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <p className="text-5xl font-semibold tracking-tight text-white">
+              <p className="text-5xl font-semibold tracking-tight text-text">
                 {formatKilometers(dashboardSummary.latestOdometerKm)}
               </p>
               <Button variant="secondary" size="sm" onClick={openOdometerModal}>
