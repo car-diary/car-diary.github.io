@@ -286,7 +286,11 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
   }
 
   const login = async (vehicleId: string) => {
-    const user = allowedUsers.find((entry) => entry.vehicleId === vehicleId.trim())
+    const normalizedVehicleId = vehicleId.trim()
+    const entries = await readAllowedUsers(settings)
+    setAllowedUsers(entries)
+
+    const user = entries.find((entry) => entry.vehicleId === normalizedVehicleId)
     if (!user) {
       throw new Error('허용되지 않은 차량번호입니다.')
     }
@@ -297,7 +301,7 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
     } catch (error) {
       if (error instanceof GitHubApiError && error.code === 'not_found') {
         if (!settings.token) {
-          throw new Error('초기 차량 데이터를 생성할 권한이 없습니다.')
+          throw new Error('차량 데이터가 아직 준비되지 않았습니다. 잠시 후 다시 시도하세요.')
         }
         const initialBundle = createEmptyUserBundle(
           user.vehicleId,

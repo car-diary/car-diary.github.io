@@ -899,14 +899,36 @@ class CarDiaryAdminApp:
 
 
 def run_self_check() -> int:
+    allowed_users_before = (
+        ALLOWED_USERS_PATH.read_text(encoding=UTF8)
+        if ALLOWED_USERS_PATH.exists()
+        else None
+    )
+    allowed_users_meta_before = (
+        ALLOWED_USERS_META_PATH.read_text(encoding=UTF8)
+        if ALLOWED_USERS_META_PATH.exists()
+        else None
+    )
+
     print(f"ROOT_DIR={ROOT_DIR}")
     print(f"BUILD_SCRIPT={BUILD_SCRIPT}")
     print(f"SOURCE_PATH={SOURCE_PATH}")
-    output = run_build_allowed_users()
-    if output:
-        print(output)
-    print("[done] self check passed")
-    return 0
+    try:
+        output = run_build_allowed_users()
+        if output:
+            print(output)
+        print("[done] self check passed")
+        return 0
+    finally:
+        if allowed_users_before is None:
+            ALLOWED_USERS_PATH.unlink(missing_ok=True)
+        else:
+            ALLOWED_USERS_PATH.write_text(allowed_users_before, encoding=UTF8)
+
+        if allowed_users_meta_before is None:
+            ALLOWED_USERS_META_PATH.unlink(missing_ok=True)
+        else:
+            ALLOWED_USERS_META_PATH.write_text(allowed_users_meta_before, encoding=UTF8)
 
 
 if __name__ == "__main__":

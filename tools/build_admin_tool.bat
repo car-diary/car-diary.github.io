@@ -2,6 +2,12 @@
 setlocal
 chcp 65001 >nul
 
+tasklist /FI "IMAGENAME eq CarDiaryAdmin.exe" 2>nul | find /I "CarDiaryAdmin.exe" >nul
+if not errorlevel 1 (
+  echo [fail] CarDiaryAdmin.exe is still running. Close it first, then build again.
+  exit /b 1
+)
+
 echo [run] Installing PyInstaller if needed...
 python -m pip install --disable-pip-version-check --user pyinstaller
 if errorlevel 1 (
