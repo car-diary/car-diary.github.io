@@ -1,5 +1,40 @@
 {
   "vehicleId": "68보0632",
-  "items": [],
-  "updatedAt": "2026-04-04T08:27:21.359Z"
+  "items": [
+    {
+      "id": "schedule_91085551f6684954",
+      "title": "엔진오일 교환, 에어필터 교환, 오일필터 교환",
+      "items": [
+        {
+          "code": "engine-oil:엔진오일 교환",
+          "categoryKey": "engine-oil",
+          "label": "엔진오일 교환",
+          "isCustom": false
+        },
+        {
+          "code": "engine-oil:에어필터 교환",
+          "categoryKey": "engine-oil",
+          "label": "에어필터 교환",
+          "isCustom": false
+        },
+        {
+          "code": "engine-oil:오일필터 교환",
+          "categoryKey": "engine-oil",
+          "label": "오일필터 교환",
+          "isCustom": false
+        }
+      ],
+      "scheduledDate": null,
+      "targetOdometerKm": 81000,
+      "expectedCost": null,
+      "priority": "normal",
+      "notes": "",
+      "status": "pending",
+      "createdAt": "2026-04-04T08:52:40.476Z",
+      "updatedAt": "2026-04-04T08:52:40.476Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    }
+  ],
+  "updatedAt": "2026-04-04T08:52:40.476Z"
 }
