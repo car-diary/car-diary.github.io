@@ -52,7 +52,7 @@ export const StatisticsPage = () => {
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">정비 통계</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
         <Card>
           <p className="text-sm text-muted">총 유지비</p>
           <p className="mt-4 text-3xl font-semibold">{formatCurrency(totalSpend)}</p>
@@ -60,12 +60,6 @@ export const StatisticsPage = () => {
         <Card>
           <p className="text-sm text-muted">연간 유지비</p>
           <p className="mt-4 text-3xl font-semibold">{formatCurrency(yearlySpend)}</p>
-        </Card>
-        <Card>
-          <p className="text-sm text-muted">km당 유지비 추정</p>
-          <p className="mt-4 text-3xl font-semibold">
-            {formatCurrency(statistics.estimatedCostPerKm)}
-          </p>
         </Card>
         <Card>
           <p className="text-sm text-muted">최근 12개월 정비건수</p>
