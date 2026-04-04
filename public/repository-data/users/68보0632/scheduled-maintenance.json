@@ -116,9 +116,9 @@
       "title": "점화코일 교환",
       "items": [
         {
-          "code": "ignition:점화코일 교환",
+          "code": "ignition:점화플러그 교환",
           "categoryKey": "ignition",
-          "label": "점화코일 교환",
+          "label": "점화플러그 교환",
           "isCustom": false
         }
       ],
@@ -129,7 +129,7 @@
       "notes": "",
       "status": "pending",
       "createdAt": "2026-04-04T08:53:31.072Z",
-      "updatedAt": "2026-04-04T08:53:31.072Z",
+      "updatedAt": "2026-04-04T08:56:55.379Z",
       "completedAt": null,
       "completedByRecordId": null
     },
@@ -168,5 +168,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T08:56:09.131Z"
+  "updatedAt": "2026-04-04T08:56:55.379Z"
 }
