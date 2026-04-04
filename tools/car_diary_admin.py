@@ -12,14 +12,13 @@ import time
 import traceback
 import urllib.error
 import urllib.request
-import webbrowser
 from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from queue import Empty, Queue
 import tkinter as tk
-from tkinter import END, StringVar, Tk, messagebox, ttk
+from tkinter import END, StringVar, Tk, ttk
 
 sys.dont_write_bytecode = True
 
@@ -679,6 +678,10 @@ class CarDiaryAdminApp:
     def log(self, message: str) -> None:
         self.message_queue.put(("log", message))
 
+    def notify(self, message: str) -> None:
+        self._append_log(message)
+        self.status_text.set(message)
+
     def _append_log(self, message: str) -> None:
         assert self.log_text is not None
         self.log_text.insert(END, f"{message}\n")
@@ -719,12 +722,13 @@ class CarDiaryAdminApp:
                     self._append_log(str(payload))
                 elif event == "error":
                     self._append_log(str(payload))
-                    messagebox.showerror("작업 실패", str(payload))
+                    self.status_text.set("작업 실패")
                 elif event == "success" and payload:
                     self._append_log(str(payload))
                 elif event == "done":
                     self._set_busy(False)
-                    self.status_text.set("준비됨")
+                    if self.status_text.get() != "작업 실패":
+                        self.status_text.set("준비됨")
                     self.refresh_vehicle_list()
         except Empty:
             pass
@@ -769,7 +773,7 @@ class CarDiaryAdminApp:
         vehicle_id = self.vehicle_input.get().strip()
         validation_error = validate_vehicle_id(vehicle_id)
         if validation_error:
-            messagebox.showwarning("입력 확인", validation_error)
+            self.notify(f"[warn] {validation_error}")
             return
 
         def worker() -> str:
@@ -798,7 +802,7 @@ class CarDiaryAdminApp:
     def delete_vehicle(self) -> None:
         vehicle_id = self.get_selected_vehicle_id()
         if not vehicle_id:
-            messagebox.showwarning("선택 확인", "삭제할 차량번호를 목록에서 먼저 선택하세요.")
+            self.notify("[warn] 삭제할 차량번호를 목록에서 먼저 선택하세요.")
             return
 
         def worker() -> str:
@@ -831,12 +835,6 @@ class CarDiaryAdminApp:
         self._run_background("차량번호 삭제 중...", worker)
 
     def deploy_changes(self) -> None:
-        if not messagebox.askyesno(
-            "배포 확인",
-            "허용 차량번호와 새 차량 폴더를 빌드하고 GitHub Pages까지 배포합니다.\n계속하시겠습니까?",
-        ):
-            return
-
         def worker() -> str:
             self.log("[run] allowed users 빌드")
             build_output = run_build_allowed_users()
@@ -870,7 +868,6 @@ class CarDiaryAdminApp:
             self.log(f"[info] push 완료: {commit_sha}")
             self.log("[run] GitHub Pages 배포 확인")
             wait_for_pages_deploy(commit_sha, self.log)
-            webbrowser.open(PAGES_URL)
             return f"[done] 배포 완료: {PAGES_URL}"
 
         self._run_background("GitHub Pages 배포 중...", worker)
