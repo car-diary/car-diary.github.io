@@ -389,33 +389,55 @@ def collect_safe_user_paths(
     removed_vehicle_ids: set[str],
 ) -> list[str]:
     completed = run_command(
-        ["git", "status", "--porcelain", "--", "public/repository-data/users"],
+        [
+            "git",
+            "-c",
+            "core.quotepath=false",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--",
+            "public/repository-data/users",
+        ],
         check=False,
     )
-    status_lines = [line for line in completed.stdout.splitlines() if line.strip()]
     allowed_paths: set[str] = set()
     violations: list[str] = []
 
-    for line in status_lines:
+    raw_entries = [entry for entry in completed.stdout.split("\0") if entry]
+    index = 0
+    while index < len(raw_entries):
+        line = raw_entries[index]
         status = line[:2]
         raw_path = line[3:].strip()
-        if " -> " in raw_path:
-            raw_path = raw_path.split(" -> ", 1)[1]
+
+        # Renames/copies in -z mode are emitted as: "XY from\0to\0"
+        if status[0] in {"R", "C"} or status[1] in {"R", "C"}:
+            if index + 1 >= len(raw_entries):
+                violations.append(line)
+                index += 1
+                continue
+            raw_path = raw_entries[index + 1].strip()
+            index += 1
 
         parts = PurePosixPath(raw_path).parts
         if len(parts) < 4:
-            violations.append(line)
+            violations.append(f"{status} {raw_path}")
+            index += 1
             continue
 
         vehicle_id = parts[3]
         if status == "??" and vehicle_id in new_vehicle_ids:
             allowed_paths.add(f"public/repository-data/users/{vehicle_id}")
+            index += 1
             continue
         if "D" in status and vehicle_id in removed_vehicle_ids:
             allowed_paths.add(f"public/repository-data/users/{vehicle_id}")
+            index += 1
             continue
 
-        violations.append(line)
+        violations.append(f"{status} {raw_path}")
+        index += 1
 
     if violations:
         raise RuntimeError(
