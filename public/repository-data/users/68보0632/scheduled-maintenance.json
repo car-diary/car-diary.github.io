@@ -2,6 +2,21 @@
   "vehicleId": "68보0632",
   "items": [
     {
+      "id": "schedule_82edce4aa9e74fbf",
+      "title": "브레이크 캘리퍼/디스크 점검 및 교체",
+      "items": [],
+      "scheduledDate": null,
+      "targetOdometerKm": 120000,
+      "expectedCost": null,
+      "priority": "normal",
+      "notes": "",
+      "status": "pending",
+      "createdAt": "2026-04-04T09:07:24.168Z",
+      "updatedAt": "2026-04-04T09:07:24.168Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    },
+    {
       "id": "schedule_e26990857d424031",
       "title": "미션오일 교환",
       "items": [
@@ -234,5 +249,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T08:57:56.779Z"
+  "updatedAt": "2026-04-04T09:07:24.168Z"
 }
