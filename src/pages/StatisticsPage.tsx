@@ -1,10 +1,9 @@
+import { format } from 'date-fns'
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
-  Line,
-  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -30,10 +29,19 @@ export const StatisticsPage = () => {
     return (
       <EmptyState
         title="통계를 만들 데이터가 없습니다."
-        description="정비내역을 하나 이상 추가하면 월별 비용과 주행거리 추이를 바로 확인할 수 있습니다."
+        description="정비내역을 추가하면 유지비와 정비 추이를 바로 볼 수 있습니다."
       />
     )
   }
+
+  const currentYear = format(new Date(), 'yyyy')
+  const totalSpend = userBundle.maintenanceRecords.records.reduce(
+    (total, record) => total + record.totalCost,
+    0,
+  )
+  const yearlySpend = userBundle.maintenanceRecords.records
+    .filter((record) => record.date.startsWith(currentYear))
+    .reduce((total, record) => total + record.totalCost, 0)
 
   return (
     <div className="space-y-6">
@@ -44,7 +52,15 @@ export const StatisticsPage = () => {
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">정비 통계</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <Card>
+          <p className="text-sm text-muted">총 유지비</p>
+          <p className="mt-4 text-3xl font-semibold">{formatCurrency(totalSpend)}</p>
+        </Card>
+        <Card>
+          <p className="text-sm text-muted">연간 유지비</p>
+          <p className="mt-4 text-3xl font-semibold">{formatCurrency(yearlySpend)}</p>
+        </Card>
         <Card>
           <p className="text-sm text-muted">km당 유지비 추정</p>
           <p className="mt-4 text-3xl font-semibold">
@@ -71,29 +87,9 @@ export const StatisticsPage = () => {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6">
         <Card>
-          <SectionTitle title="월별 주행거리" />
-          <div className="mt-6 h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={statistics.monthlyTrend}>
-                <CartesianGrid stroke="#223246" strokeDasharray="3 3" />
-                <XAxis dataKey="label" stroke="#9ba7ba" />
-                <YAxis stroke="#9ba7ba" />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="distanceKm"
-                  stroke="#6cb7ff"
-                  strokeWidth={3}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card>
-          <SectionTitle title="월별 정비비" />
+          <SectionTitle title="월별 유지비" />
           <div className="mt-6 h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statistics.monthlyTrend}>
@@ -108,24 +104,9 @@ export const StatisticsPage = () => {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
+      <div className="grid gap-6">
         <Card>
-          <SectionTitle title="연도별 평균" />
-          <div className="mt-6 h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={statistics.annualMetrics}>
-                <CartesianGrid stroke="#223246" strokeDasharray="3 3" />
-                <XAxis dataKey="year" stroke="#9ba7ba" />
-                <YAxis stroke="#9ba7ba" />
-                <Tooltip />
-                <Bar dataKey="averageMileageKm" fill="#6cb7ff" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="averageSpend" fill="#f4ba53" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card>
-          <SectionTitle title="정비항목별 지출 비중" />
+          <SectionTitle title="정비 항목별 지출 비중" />
           <div className="mt-6 h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -152,7 +133,7 @@ export const StatisticsPage = () => {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card>
-          <SectionTitle title="항목별 정비 건수" />
+          <SectionTitle title="정비 항목별 정비 건수" />
           <div className="mt-5 space-y-3">
             {statistics.recordCountByItem.map((item) => (
               <div
@@ -160,7 +141,7 @@ export const StatisticsPage = () => {
                 className="flex items-center justify-between rounded-2xl border border-border bg-panelAlt px-4 py-3"
               >
                 <span className="text-sm text-text">{item.name}</span>
-                <span className="text-sm font-semibold text-accentSoft">{item.count}회</span>
+                <span className="text-sm font-semibold text-accentSoft">{item.count}건</span>
               </div>
             ))}
           </div>
