@@ -24,6 +24,7 @@ import {
   Field,
   Input,
   Modal,
+  Select,
   SectionTitle,
   TextArea,
 } from '../components/ui'
@@ -342,8 +343,7 @@ const ScheduledMaintenanceEditor = ({
                 />
               </Field>
               <Field label="중요도">
-                <select
-                  className="h-11 rounded-2xl border border-border bg-panelAlt px-4 text-sm"
+                <Select
                   value={draft.priority}
                   onChange={(event) =>
                     setDraft((current) => ({
@@ -355,7 +355,7 @@ const ScheduledMaintenanceEditor = ({
                   <option value="low">낮음</option>
                   <option value="normal">보통</option>
                   <option value="high">높음</option>
-                </select>
+                </Select>
               </Field>
             </div>
 
@@ -398,8 +398,7 @@ const ScheduledMaintenanceEditor = ({
           <SectionTitle
             title="정비예정 목록"
             action={
-              <select
-                className="h-11 rounded-2xl border border-border bg-panelAlt px-4 text-sm"
+              <Select
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(event.target.value as 'pending' | 'completed' | 'all')
@@ -408,7 +407,7 @@ const ScheduledMaintenanceEditor = ({
                 <option value="pending">대기 중</option>
                 <option value="completed">완료됨</option>
                 <option value="all">전체</option>
-              </select>
+              </Select>
             }
           />
           <div className="mt-5 space-y-3">

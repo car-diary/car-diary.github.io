@@ -1,5 +1,13 @@
 import { LoaderCircle, X, type LucideIcon } from 'lucide-react'
-import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import {
+  useEffect,
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react'
 
 import { cn } from '../lib/utils'
 import type { ToastMessage } from '../types/models'
@@ -43,6 +51,7 @@ export const Button = ({
   loadingLabel,
   children,
   disabled,
+  type = 'button',
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -52,7 +61,7 @@ export const Button = ({
 }) => (
   <button
     className={cn(
-      'inline-flex items-center justify-center gap-2 rounded-2xl font-medium transition disabled:cursor-not-allowed disabled:opacity-45',
+      'inline-flex touch-manipulation select-none items-center justify-center gap-2 rounded-2xl font-medium transition disabled:cursor-not-allowed disabled:opacity-45',
       variant === 'primary' &&
         'bg-accent px-4 text-slate-950 hover:bg-accentSoft',
       variant === 'secondary' &&
@@ -60,11 +69,12 @@ export const Button = ({
       variant === 'ghost' && 'px-3 text-muted hover:bg-panelAlt hover:text-text',
       variant === 'danger' &&
         'border border-danger/40 bg-danger/10 px-4 text-danger hover:bg-danger/20',
-      size === 'sm' ? 'h-9 text-sm' : 'h-11 text-sm',
+      size === 'sm' ? 'h-10 text-sm' : 'h-11 text-sm',
       className,
     )}
     aria-busy={loading || undefined}
     disabled={disabled || loading}
+    type={type}
     {...props}
   >
     {loading ? <Spinner className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} /> : null}
@@ -76,6 +86,7 @@ export const IconButton = ({
   icon: Icon,
   label,
   className,
+  type = 'button',
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   icon: LucideIcon
@@ -84,9 +95,10 @@ export const IconButton = ({
   <button
     aria-label={label}
     className={cn(
-      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-panelAlt text-muted transition hover:text-text',
+      'inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-2xl border border-border bg-panelAlt text-muted transition hover:text-text',
       className,
     )}
+    type={type}
     {...props}
   >
     <Icon className="h-4 w-4" />
@@ -119,11 +131,13 @@ export const Badge = ({
 
 export const Input = ({
   className,
+  inputMode,
   ...props
 }: InputHTMLAttributes<HTMLInputElement>) => (
   <input
+    inputMode={inputMode ?? (props.type === 'number' ? 'decimal' : undefined)}
     className={cn(
-      'h-11 w-full rounded-2xl border border-border bg-panelAlt px-4 text-sm text-text outline-none transition placeholder:text-muted focus:border-accent/60 focus:ring-2 focus:ring-accent/25',
+      'h-11 w-full touch-manipulation rounded-2xl border border-border bg-panelAlt px-4 text-base text-text outline-none transition placeholder:text-muted focus:border-accent/60 focus:ring-2 focus:ring-accent/25 sm:text-sm',
       className,
     )}
     {...props}
@@ -136,7 +150,7 @@ export const TextArea = ({
 }: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   <textarea
     className={cn(
-      'min-h-[120px] w-full rounded-2xl border border-border bg-panelAlt px-4 py-3 text-sm text-text outline-none transition placeholder:text-muted focus:border-accent/60 focus:ring-2 focus:ring-accent/25',
+      'min-h-[120px] w-full touch-manipulation rounded-2xl border border-border bg-panelAlt px-4 py-3 text-base text-text outline-none transition placeholder:text-muted focus:border-accent/60 focus:ring-2 focus:ring-accent/25 sm:text-sm',
       className,
     )}
     {...props}
@@ -149,7 +163,7 @@ export const Select = ({
 }: SelectHTMLAttributes<HTMLSelectElement>) => (
   <select
     className={cn(
-      'h-11 w-full rounded-2xl border border-border bg-panelAlt px-4 text-sm text-text outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/25',
+      'h-11 w-full touch-manipulation rounded-2xl border border-border bg-panelAlt px-4 text-base text-text outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/25 sm:text-sm',
       className,
     )}
     {...props}
@@ -231,16 +245,41 @@ export const Modal = ({
   children: ReactNode
   onClose: () => void
 }) => {
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open])
+
   if (!open) return null
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-      <div className="w-full max-w-lg rounded-3xl border border-border bg-panel p-6 shadow-panel">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-950/70 p-3 sm:items-center sm:p-4"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="w-full max-w-lg max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-3xl border border-border bg-panel p-5 shadow-panel sm:max-h-[calc(100dvh-2rem)] sm:p-6"
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-lg font-semibold text-text">{title}</h3>
             {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
           </div>
-          <IconButton icon={X} label="닫기" onClick={onClose} />
+          <IconButton icon={X} label="닫기" className="shrink-0" onClick={onClose} />
         </div>
         <div className="mt-5">{children}</div>
       </div>
@@ -284,7 +323,8 @@ export const ToastViewport = ({
             ) : null}
           </div>
           <button
-            className="text-muted transition hover:text-text"
+            type="button"
+            className="touch-manipulation text-muted transition hover:text-text"
             onClick={() => onDismiss(toast.id)}
           >
             <X className="h-4 w-4" />

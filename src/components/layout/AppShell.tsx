@@ -8,7 +8,9 @@ import {
   Menu,
   Settings,
   Wrench,
+  X,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '../../constants/app'
@@ -30,13 +32,106 @@ export const AppShell = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { userBundle, session, logout, isSaving } = useApp()
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const nickname = userBundle?.profile.nickname || session?.vehicleId || '차량'
   const routeTitle =
     navItems.find((item) => item.to === location.pathname)?.label ?? 'Car Diary'
 
+  const handleLogout = () => {
+    setIsMobileNavOpen(false)
+    logout()
+    navigate(ROUTES.login)
+  }
+
+  useEffect(() => {
+    if (!isMobileNavOpen) {
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isMobileNavOpen])
+
   return (
     <div className="min-h-screen bg-bg text-text">
       <LoadingOverlay visible={isSaving} />
+
+      {isMobileNavOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            aria-label="메뉴 닫기"
+            className="absolute inset-0 bg-slate-950/72"
+            onClick={() => setIsMobileNavOpen(false)}
+          />
+          <div className="relative flex h-full">
+            <Card className="m-3 flex w-[min(19rem,calc(100vw-1.5rem))] flex-col gap-5 rounded-[2rem] p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accentSoft">
+                    Car Diary
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold">{nickname}</h2>
+                </div>
+                <IconButton
+                  icon={X}
+                  label="메뉴 닫기"
+                  onClick={() => setIsMobileNavOpen(false)}
+                />
+              </div>
+
+              <nav className="space-y-2">
+                {navItems.map(({ to, label, icon: Icon, end }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={end}
+                    onClick={() => setIsMobileNavOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center gap-3 rounded-2xl px-4 py-3 text-base transition',
+                        isActive
+                          ? 'bg-accent text-slate-950'
+                          : 'text-muted hover:bg-panelAlt hover:text-text',
+                      )
+                    }
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </NavLink>
+                ))}
+              </nav>
+
+              <div className="mt-auto flex flex-col gap-3">
+                <Button
+                  variant="secondary"
+                  className="w-full justify-between"
+                  onClick={() => {
+                    setIsMobileNavOpen(false)
+                    navigate(ROUTES.settings)
+                  }}
+                >
+                  설정
+                  <Settings className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between"
+                  onClick={handleLogout}
+                >
+                  로그아웃
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </div>
+      ) : null}
+
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px] gap-6 px-4 py-4 lg:px-6">
         <aside className="hidden w-[280px] shrink-0 lg:block">
           <Card className="sticky top-4 flex h-[calc(100vh-2rem)] flex-col gap-6">
@@ -70,10 +165,7 @@ export const AppShell = () => {
               <Button
                 variant="secondary"
                 className="w-full justify-between"
-                onClick={() => {
-                  logout()
-                  navigate(ROUTES.login)
-                }}
+                onClick={handleLogout}
               >
                 로그아웃
                 <LogOut className="h-4 w-4" />
@@ -91,8 +183,8 @@ export const AppShell = () => {
               </div>
               <IconButton
                 icon={Menu}
-                label="설정으로 이동"
-                onClick={() => navigate(ROUTES.settings)}
+                label="메뉴 열기"
+                onClick={() => setIsMobileNavOpen(true)}
               />
             </Card>
             <div className="flex flex-col gap-4 rounded-[2rem] border border-border/70 bg-gradient-to-r from-panel to-panelAlt px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -100,17 +192,11 @@ export const AppShell = () => {
                 <p className="text-sm text-muted">로그인 차량</p>
                 <h2 className="mt-2 text-2xl font-semibold">{session?.vehicleId}</h2>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="hidden items-center gap-3 sm:flex">
                 <Button variant="secondary" onClick={() => navigate(ROUTES.settings)}>
                   설정
                 </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    logout()
-                    navigate(ROUTES.login)
-                  }}
-                >
+                <Button variant="ghost" onClick={handleLogout}>
                   로그아웃
                 </Button>
               </div>
