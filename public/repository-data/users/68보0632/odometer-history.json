@@ -1,6 +1,6 @@
 {
   "vehicleId": "68보0632",
-  "currentOdometerKm": 74600,
+  "currentOdometerKm": 74700,
   "entries": [
     {
       "id": "odo_20251103",
@@ -101,7 +101,15 @@
       "source": "maintenance",
       "note": "2026-04-04 정비 입력",
       "relatedRecordId": "record_1cc9e2f56c114c10"
+    },
+    {
+      "id": "odo_a71cbbbc63ab455e",
+      "recordedAt": "2026-04-06T03:07:06.044Z",
+      "odometerKm": 74700,
+      "source": "manual",
+      "note": "",
+      "relatedRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T10:43:50.287Z"
+  "updatedAt": "2026-04-06T03:07:06.044Z"
 }
