@@ -2,28 +2,6 @@
   "vehicleId": "68보0632",
   "items": [
     {
-      "id": "schedule_c69a76eca8cb40d2",
-      "title": "워셔액 보충",
-      "items": [
-        {
-          "code": "consumables:워셔액 보충",
-          "categoryKey": "consumables",
-          "label": "워셔액 보충",
-          "isCustom": false
-        }
-      ],
-      "scheduledDate": "2026-04-09",
-      "targetOdometerKm": null,
-      "expectedCost": null,
-      "priority": "normal",
-      "notes": "",
-      "status": "pending",
-      "createdAt": "2026-04-07T03:20:46.873Z",
-      "updatedAt": "2026-04-07T03:20:46.873Z",
-      "completedAt": null,
-      "completedByRecordId": null
-    },
-    {
       "id": "schedule_4832a419c7b2479e",
       "title": "프론트 타이어 교체, 리어 타이어 교체",
       "items": [
@@ -312,5 +290,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-07T03:20:46.873Z"
+  "updatedAt": "2026-04-07T03:20:54.882Z"
 }
