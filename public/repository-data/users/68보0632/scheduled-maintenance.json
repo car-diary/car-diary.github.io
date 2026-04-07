@@ -2,6 +2,34 @@
   "vehicleId": "68보0632",
   "items": [
     {
+      "id": "schedule_4832a419c7b2479e",
+      "title": "프론트 타이어 교체, 리어 타이어 교체",
+      "items": [
+        {
+          "code": "tires:프론트 타이어 교체",
+          "categoryKey": "tires",
+          "label": "프론트 타이어 교체",
+          "isCustom": false
+        },
+        {
+          "code": "tires:리어 타이어 교체",
+          "categoryKey": "tires",
+          "label": "리어 타이어 교체",
+          "isCustom": false
+        }
+      ],
+      "scheduledDate": "2027-04-05",
+      "targetOdometerKm": null,
+      "expectedCost": null,
+      "priority": "normal",
+      "notes": "전/후 타이어 노후화 (6년)로 인한 교체",
+      "status": "pending",
+      "createdAt": "2026-04-07T03:18:27.345Z",
+      "updatedAt": "2026-04-07T03:18:27.345Z",
+      "completedAt": null,
+      "completedByRecordId": null
+    },
+    {
       "id": "schedule_82edce4aa9e74fbf",
       "title": "프론트 브레이크디스크 교환, 리어 브레이크캘리퍼 교환, 프론트 브레이크캘리퍼 교환, 리어 브레이크디스크 교환",
       "items": [
@@ -262,5 +290,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-04T09:26:02.467Z"
+  "updatedAt": "2026-04-07T03:18:27.345Z"
 }
