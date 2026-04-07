@@ -247,7 +247,7 @@
     },
     {
       "id": "schedule_8b980c87a978431c",
-      "title": "점화코일 교환",
+      "title": "점화플러그 교환",
       "items": [
         {
           "code": "ignition:점화플러그 교환",
@@ -257,13 +257,13 @@
         }
       ],
       "scheduledDate": null,
-      "targetOdometerKm": 79000,
+      "targetOdometerKm": 80000,
       "expectedCost": null,
       "priority": "normal",
       "notes": "",
       "status": "pending",
       "createdAt": "2026-04-04T08:53:31.072Z",
-      "updatedAt": "2026-04-04T08:56:55.379Z",
+      "updatedAt": "2026-04-07T03:18:51.616Z",
       "completedAt": null,
       "completedByRecordId": null
     },
@@ -290,5 +290,5 @@
       "completedByRecordId": null
     }
   ],
-  "updatedAt": "2026-04-07T03:18:27.345Z"
+  "updatedAt": "2026-04-07T03:18:51.616Z"
 }
